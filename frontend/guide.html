@@ -11,7 +11,7 @@
     />
   </head>
 
-  <body>
+  <body class="terms-page">
     <!-- NAVIGATION BAR -->
     <nav class="navbar">
       <div class="navbar-container">
@@ -23,7 +23,7 @@
           <li><a href="index.html" class="nav-link">TRANG CHỦ</a></li>
           <li><a href="about.html" class="nav-link">GIỚI THIỆU</a></li>
           <li><a href="tours.html" class="nav-link">TOUR DU LỊCH</a></li>
-          <li><a href="#pricing" class="nav-link">BẢNG GIÁ</a></li>
+          <li><a href="pricing.html" class="nav-link">BẢNG GIÁ</a></li>
           <li><a href="#blog" class="nav-link">BLOG</a></li>
           <li><a href="#contact" class="nav-link">LIÊN HỆ</a></li>
         </ul>
@@ -41,110 +41,83 @@
     </nav>
 
     <!-- HERO SECTION -->
-    <section
-      class="hero-section"
-      style="
-        background-image: url(&quot;https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=400&fit=crop&quot;);
-      "
-    >
+    <section class="hero-section terms-hero">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <h1 class="hero-title">Hướng dẫn đặt tour</h1>
         <p class="hero-subtitle">
-          Các bước đơn giản để đặt tour du lịch của bạn
+          Quy trình đặt tour nhanh gọn, dễ theo dõi
         </p>
       </div>
     </section>
 
     <!-- CONTENT -->
-    <section class="legal-section">
+    <section class="terms-section">
       <div class="container">
-        <div class="legal-content">
-          <h2>Hướng dẫn Từng Bước Đặt Tour</h2>
+        <div class="terms-layout">
+          <aside class="terms-sidebar">
+            <nav class="terms-toc">
+              <h3>Mục lục nhanh</h3>
+              <a href="#step-1"><i class="fas fa-magnifying-glass"></i>Chọn tour</a>
+              <a href="#step-2"><i class="fas fa-user-pen"></i>Nhập thông tin</a>
+              <a href="#step-3"><i class="fas fa-credit-card"></i>Thanh toán</a>
+              <a href="#step-4"><i class="fas fa-envelope-open-text"></i>Xác nhận</a>
+              <a href="#note"><i class="fas fa-circle-info"></i>Lưu ý quan trọng</a>
+              <a href="#contact"><i class="fas fa-headset"></i>Hỗ trợ</a>
+            </nav>
+          </aside>
 
-          <div class="legal-item">
-            <h3>Bước 1: Duyệt các tour</h3>
-            <p>
-              Truy cập trang "TOUR DU LỊCH" để xem danh sách tất cả các tour có
-              sẵn. Bạn có thể:
-            </p>
-            <ul>
-              <li>Lọc theo địa điểm, giá tiền, thời hạn</li>
-              <li>Đọc mô tả chi tiết về từng tour</li>
-              <li>Xem đánh giá từ những khách hàng khác</li>
-              <li>Kiểm tra lịch trình và các hoạt động</li>
-            </ul>
-          </div>
+          <div class="terms-content">
+            <article class="terms-card" id="step-1">
+              <h3><i class="fas fa-magnifying-glass"></i>Bước 1: Chọn tour phù hợp</h3>
+              <p>
+                Vào trang Tour du lịch, lọc theo điểm đến, ngân sách hoặc thời gian.
+                Kiểm tra lịch trình, ngày khởi hành và điều kiện đổi/hủy trước khi
+                đặt.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>Bước 2: Chọn tour yêu thích</h3>
-            <p>Khi bạn tìm thấy tour mà mình yêu thích:</p>
-            <ul>
-              <li>Bấm nút "Chi tiết" để xem thêm thông tin</li>
-              <li>Kiểm tra ngày khởi hành và giá tiền</li>
-              <li>Xem điều kiện hủy bỏ</li>
-              <li>Bấm "Đặt Ngay" để tiếp tục</li>
-            </ul>
-          </div>
+            <article class="terms-card" id="step-2">
+              <h3><i class="fas fa-user-pen"></i>Bước 2: Điền thông tin đặt tour</h3>
+              <p>
+                Nhập thông tin liên hệ của người đại diện và số lượng khách. Vui lòng
+                cung cấp chính xác để việc xác nhận và hỗ trợ diễn ra nhanh chóng.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>Bước 3: Điền thông tin khách</h3>
-            <p>Bạn sẽ được yêu cầu cung cấp:</p>
-            <ul>
-              <li>Tên đầy đủ</li>
-              <li>Số điện thoại</li>
-              <li>Email</li>
-              <li>Số lượng khách</li>
-              <li>Yêu cầu đặc biệt (nếu có)</li>
-            </ul>
-          </div>
+            <article class="terms-card" id="step-3">
+              <h3><i class="fas fa-credit-card"></i>Bước 3: Chọn phương thức thanh toán</h3>
+              <p>
+                Bạn có thể thanh toán qua chuyển khoản, thẻ hoặc ví điện tử (nếu hỗ
+                trợ). Hệ thống sẽ hiển thị tổng chi phí trước khi bạn xác nhận.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>Bước 4: Chọn phương thức thanh toán</h3>
-            <p>Du Lịch Việt chấp nhận các phương thức thanh toán sau:</p>
-            <ul>
-              <li>Thẻ tín dụng / Thẻ ghi nợ (Visa, MasterCard)</li>
-              <li>Chuyển khoản ngân hàng</li>
-              <li>Thanh toán tại quầy</li>
-              <li>Ví điện tử (Momo, ZaloPay)</li>
-            </ul>
-          </div>
+            <article class="terms-card" id="step-4">
+              <h3><i class="fas fa-envelope-open-text"></i>Bước 4: Nhận xác nhận đặt chỗ</h3>
+              <p>
+                Sau khi thanh toán thành công, bạn sẽ nhận email hoặc cuộc gọi xác
+                nhận cùng thông tin đơn hàng và hướng dẫn trước ngày khởi hành.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>Bước 5: Xác nhận đơn đặt</h3>
-            <p>Kiểm tra lại tất cả thông tin:</p>
-            <ul>
-              <li>Chi tiết tour</li>
-              <li>Số khách</li>
-              <li>Giá tiền tổng cộng</li>
-              <li>Thông tin thanh toán</li>
-            </ul>
-            <p>Bấm "Xác nhận" để hoàn tất đơn đặt.</p>
-          </div>
+            <article class="terms-card" id="note">
+              <h3><i class="fas fa-circle-info"></i>Lưu ý cần thiết</h3>
+              <p>
+                Chuẩn bị giấy tờ tùy thân hợp lệ, đến đúng giờ tập trung và giữ liên
+                lạc với bộ phận chăm sóc khách hàng khi cần đổi lịch hoặc hỗ trợ khẩn.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>Bước 6: Nhận xác nhận</h3>
-            <p>Sau khi đặt thành công, bạn sẽ:</p>
-            <ul>
-              <li>Nhận email xác nhận</li>
-              <li>Có số đơn đặt riêng</li>
-              <li>Được liên hệ bởi đội ngũ Du Lịch Việt</li>
-              <li>Nhận itinerary chi tiết trước ngày khởi hành</li>
-            </ul>
-          </div>
-
-          <div class="legal-item">
-            <h3>Cần giúp đỡ?</h3>
-            <p>
-              Nếu bạn gặp vấn đề trong quá trình đặt tour, vui lòng liên hệ:
-            </p>
-            <p>
-              <strong>Email:</strong> support@dulichviet.com<br /><strong
-                >Điện thoại:</strong
-              >
-              (028) 1234 5678<br /><strong>Chat:</strong> Có sẵn 24/7 trên trang
-              web
-            </p>
+            <article class="terms-card terms-contact" id="contact">
+              <h3><i class="fas fa-headset"></i>Cần hỗ trợ đặt tour?</h3>
+              <p>Nếu gặp khó khăn trong quá trình đặt, vui lòng liên hệ:</p>
+              <p>
+                <strong>Email:</strong> support@dulichviet.com<br />
+                <strong>Hotline:</strong> (028) 1234 5678<br />
+                <strong>Chat:</strong> Có sẵn 24/7 trên website
+              </p>
+            </article>
           </div>
         </div>
       </div>

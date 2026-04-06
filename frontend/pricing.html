@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bảng Giá - Du Lịch Việt</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="pricing-page">
+    <nav class="navbar">
+      <div class="navbar-container">
+        <a href="index.html" class="navbar-logo">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Du lịch Việt</span>
+        </a>
+
+        <ul class="navbar-menu">
+          <li><a href="index.html" class="nav-link">TRANG CHỦ</a></li>
+          <li><a href="about.html" class="nav-link">GIỚI THIỆU</a></li>
+          <li><a href="tours.html" class="nav-link">TOUR DU LỊCH</a></li>
+          <li><a href="pricing.html" class="nav-link active">BẢNG GIÁ</a></li>
+          <li><a href="index.html#blog" class="nav-link">BLOG</a></li>
+          <li><a href="index.html#contact" class="nav-link">LIÊN HỆ</a></li>
+        </ul>
+
+        <div class="navbar-right">
+          <div class="search-box">
+            <input type="text" placeholder="Tra cứu..." class="search-input" />
+            <i class="fas fa-search"></i>
+          </div>
+          <button class="btn-login">ĐĂNG NHẬP</button>
+        </div>
+
+        <div class="mobile-toggle">
+          <i class="fas fa-bars"></i>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero-section pricing-hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1 class="hero-title">Bảng giá hệ thống</h1>
+        <p class="hero-subtitle">
+          Quản lý tour, booking và khách hàng — chọn gói vừa sức với đội của bạn
+        </p>
+      </div>
+    </section>
+
+    <section class="pricing-section-v2" data-pricing-root>
+      <div class="container">
+        <div class="pricing-intro">
+          <h2>Chọn gói tăng trưởng phù hợp cho đội ngũ của bạn</h2>
+          <p>
+            Bảng giá tối ưu cho từng giai đoạn phát triển, từ vận hành cơ bản đến
+            quản trị đa chi nhánh chuyên sâu.
+          </p>
+        </div>
+
+        <div class="pricing-highlights">
+          <div class="pricing-highlight-item">
+            <i class="fas fa-rocket"></i>
+            <div>
+              <h3>Triển khai nhanh</h3>
+              <p>Kích hoạt trong 10 phút, không cần đội kỹ thuật riêng</p>
+            </div>
+          </div>
+          <div class="pricing-highlight-item">
+            <i class="fas fa-shield-alt"></i>
+            <div>
+              <h3>Bảo mật chuẩn doanh nghiệp</h3>
+              <p>Dữ liệu sao lưu định kỳ, phân quyền truy cập linh hoạt</p>
+            </div>
+          </div>
+          <div class="pricing-highlight-item">
+            <i class="fas fa-headset"></i>
+            <div>
+              <h3>Đồng hành 24/7</h3>
+              <p>Đội ngũ CSKH hỗ trợ xuyên suốt từ onboarding đến vận hành</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pricing-billing">
+          <div class="pricing-billing-inner" role="group" aria-label="Chu kỳ thanh toán">
+            <button
+              type="button"
+              class="pricing-billing-btn is-active"
+              data-cycle="monthly"
+            >
+              Thanh toán theo tháng
+            </button>
+            <button type="button" class="pricing-billing-btn" data-cycle="yearly">
+              Thanh toán theo năm
+              <span class="pricing-billing-badge">−20%</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pricing-grid-v2">
+          <article
+            class="pricing-card-v2"
+            data-monthly="299000"
+            data-yearly="2870400"
+          >
+            <div class="pricing-card-v2__icon" aria-hidden="true">
+              <i class="fas fa-user"></i>
+            </div>
+            <h3>Cá nhân</h3>
+            <p class="pricing-card-v2__desc">Phù hợp chủ homestay, HDV độc lập</p>
+            <div class="pricing-card-v2__price">
+              <span class="pricing-card-v2__amount">
+                <span class="js-price-amount">299.000</span>đ
+              </span>
+              <span class="pricing-card-v2__period js-price-period">/tháng</span>
+              <span class="pricing-card-v2__saving">
+                <i class="fas fa-leaf"></i> Tiết kiệm 20% so với 12 tháng lẻ
+              </span>
+            </div>
+            <ul class="pricing-card-v2__list">
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Tối đa <strong>20 tour</strong> đang hoạt động</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Quản lý booking cơ bản &amp; lịch khởi hành</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Hỗ trợ qua email trong 24 giờ</span>
+              </li>
+            </ul>
+            <button type="button" class="pricing-card-v2__cta pricing-card-v2__cta--outline">
+              Bắt đầu ngay
+            </button>
+          </article>
+
+          <article
+            class="pricing-card-v2 pricing-card-v2--featured"
+            data-monthly="699000"
+            data-yearly="6710400"
+          >
+            <span class="pricing-card-v2__badge">
+              <i class="fas fa-crown"></i>Bán chạy nhất
+            </span>
+            <div class="pricing-card-v2__icon" aria-hidden="true">
+              <i class="fas fa-store"></i>
+            </div>
+            <h3>Đại lý</h3>
+            <p class="pricing-card-v2__desc">Đại lý tour, công ty nhỏ &amp; vừa</p>
+            <div class="pricing-card-v2__price">
+              <span class="pricing-card-v2__amount">
+                <span class="js-price-amount">699.000</span>đ
+              </span>
+              <span class="pricing-card-v2__period js-price-period">/tháng</span>
+              <span class="pricing-card-v2__saving">
+                <i class="fas fa-leaf"></i> Tiết kiệm 20% so với 12 tháng lẻ
+              </span>
+            </div>
+            <ul class="pricing-card-v2__list">
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Tối đa <strong>100 tour</strong> &amp; báo cáo doanh thu</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Quản lý booking nâng cao, nhắc thanh toán</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Chat + hotline ưu tiên trong giờ hành chính</span>
+              </li>
+            </ul>
+            <button type="button" class="pricing-card-v2__cta pricing-card-v2__cta--solid">
+              Chọn gói Đại lý
+            </button>
+          </article>
+
+          <article
+            class="pricing-card-v2"
+            data-monthly="1499000"
+            data-yearly="14390400"
+          >
+            <div class="pricing-card-v2__icon" aria-hidden="true">
+              <i class="fas fa-building"></i>
+            </div>
+            <h3>Doanh nghiệp</h3>
+            <p class="pricing-card-v2__desc">Tập đoàn du lịch &amp; chuỗi đại lý</p>
+            <div class="pricing-card-v2__price">
+              <span class="pricing-card-v2__amount">
+                <span class="js-price-amount">1.499.000</span>đ
+              </span>
+              <span class="pricing-card-v2__period js-price-period">/tháng</span>
+              <span class="pricing-card-v2__saving">
+                <i class="fas fa-leaf"></i> Tiết kiệm 20% so với 12 tháng lẻ
+              </span>
+            </div>
+            <ul class="pricing-card-v2__list">
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span><strong>Không giới hạn</strong> tour &amp; người dùng</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Booking toàn diện, phân quyền &amp; API</span>
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                <span>Account Manager &amp; hỗ trợ 24/7</span>
+              </li>
+            </ul>
+            <button type="button" class="pricing-card-v2__cta pricing-card-v2__cta--dark">
+              Liên hệ tư vấn
+            </button>
+          </article>
+        </div>
+
+        <div class="pricing-guarantee">
+          <div class="pricing-guarantee__icon">
+            <i class="fas fa-check-double"></i>
+          </div>
+          <div class="pricing-guarantee__content">
+            <h3>Cam kết trải nghiệm không rủi ro</h3>
+            <p>
+              Dùng thử miễn phí 14 ngày cho mọi gói. Nếu chưa phù hợp, bạn có thể
+              dừng bất kỳ lúc nào.
+            </p>
+          </div>
+          <button type="button" class="pricing-card-v2__cta pricing-card-v2__cta--solid">
+            Đăng ký dùng thử miễn phí
+          </button>
+        </div>
+
+        <div class="pricing-faq">
+          <h3>Câu hỏi thường gặp</h3>
+          <div class="pricing-faq-grid">
+            <article class="pricing-faq-item">
+              <h4>Có thể đổi gói khi đang sử dụng không?</h4>
+              <p>
+                Có. Bạn có thể nâng cấp hoặc hạ cấp ngay trong trang quản trị, hệ
+                thống sẽ tự tính phần chi phí chênh lệch.
+              </p>
+            </article>
+            <article class="pricing-faq-item">
+              <h4>Dữ liệu có bị mất khi hạ cấp gói?</h4>
+              <p>
+                Không. Dữ liệu vẫn được lưu an toàn, bạn chỉ bị giới hạn một số tính
+                năng nâng cao tương ứng với gói mới.
+              </p>
+            </article>
+            <article class="pricing-faq-item">
+              <h4>Có hỗ trợ xuất hóa đơn VAT không?</h4>
+              <p>
+                Có. Mọi gói đều hỗ trợ xuất hóa đơn điện tử đầy đủ theo thông tin
+                doanh nghiệp của bạn.
+              </p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <h4>Du Lịch Việt</h4>
+            <p>
+              Chúng tôi cam kết mang đến những chuyến đi ý nghĩa và kỷ niệm khó
+              quên cho mọi gia đình Việt.
+            </p>
+            <div class="contact-info">
+              <p>
+                <i class="fas fa-map-marker-alt"></i> 123 Đường Lê Lợi, Quận 1,
+                TP.HCM
+              </p>
+              <p><i class="fas fa-phone"></i> (028) 1234 5678</p>
+              <p><i class="fas fa-envelope"></i> info@dulichviet.com</p>
+            </div>
+          </div>
+          <div class="footer-col">
+            <h4>DANH MỤC</h4>
+            <ul>
+              <li><a href="index.html">Trang chủ</a></li>
+              <li><a href="about.html">Giới thiệu</a></li>
+              <li><a href="tours.html">Tour trong nước</a></li>
+              <li><a href="#">Tour quốc tế</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>HỖ TRỢ</h4>
+            <ul>
+              <li><a href="terms.html">Điều khoản sử dụng</a></li>
+              <li><a href="privacy.html">Chính sách bảo mật</a></li>
+              <li><a href="guide.html">Hướng dẫn đặt tour</a></li>
+              <li><a href="faq.html">FAQ</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>KẾT NỐI VỚI CHÚNG TÔI</h4>
+            <p>Đăng ký để nhận tin khuyến mãi mới nhất!</p>
+            <div class="social-links">
+              <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
+              <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+              <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 Du lịch Việt. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+    <script>
+      (function () {
+        var root = document.querySelector("[data-pricing-root]");
+        if (!root) return;
+        var buttons = root.querySelectorAll(".pricing-billing-btn");
+        var cards = root.querySelectorAll("[data-monthly]");
+
+        function formatVnd(n) {
+          return new Intl.NumberFormat("vi-VN").format(n);
+        }
+
+        function setCycle(cycle) {
+          buttons.forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-cycle") === cycle);
+          });
+          cards.forEach(function (card) {
+            var monthly = parseInt(card.getAttribute("data-monthly"), 10);
+            var yearly = parseInt(card.getAttribute("data-yearly"), 10);
+            var amountEl = card.querySelector(".js-price-amount");
+            var periodEl = card.querySelector(".js-price-period");
+            if (!amountEl || !periodEl) return;
+            if (cycle === "monthly") {
+              amountEl.textContent = formatVnd(monthly);
+              periodEl.textContent = "/tháng";
+            } else {
+              amountEl.textContent = formatVnd(yearly);
+              periodEl.textContent = "/năm";
+            }
+            card.classList.toggle("is-yearly", cycle === "yearly");
+          });
+        }
+
+        buttons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            setCycle(btn.getAttribute("data-cycle"));
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

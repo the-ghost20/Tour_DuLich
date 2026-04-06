@@ -651,6 +651,106 @@ VALUES
      N'Hủy 21 ngày trước hoàn 100%, từ 7-21 ngày hoàn 85%',
      1, 'Available', 'Beach', 'Easy', 1);
 
+-- Bổ sung điểm đến nội địa phổ biến cho nhóm tour mới
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Sài Gòn', N'Trung tâm kinh tế, văn hóa với nhiều địa danh lịch sử nổi bật', N'Việt Nam', N'TP Hồ Chí Minh', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Sài Gòn');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Đà Nẵng', N'Thành phố biển hiện đại, cửa ngõ kết nối Hội An và Bà Nà Hills', N'Việt Nam', N'Đà Nẵng', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Đà Nẵng');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Miền Tây', N'Vùng sông nước Cửu Long với chợ nổi, miệt vườn và văn hóa bản địa', N'Việt Nam', N'Đồng bằng Sông Cửu Long', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Miền Tây');
+
+-- Bổ sung 5 tour mới (dài, chi tiết) để test hiển thị dữ liệu
+INSERT INTO dbo.Tours (
+    TourCode, TourName, Description, ItineraryDetails, DestinationId, Duration,
+    DepartureCity, Capacity, AvailableSeats, PricePerAdult, PricePerChild, PricePerSenior,
+    StartDate, EndDate, Highlights, Included, NotIncluded, CancellationPolicy,
+    IsInternational, Status, TourType, DifficultyLevel, CreatedByUserId
+)
+SELECT
+    N'SG003',
+    N'Sài Gòn City Tour: Dinh Độc Lập - Nhà Thờ Đức Bà - Bưu Điện Thành Phố - Chợ Bến Thành',
+    N'Tour nội đô khám phá các biểu tượng lịch sử và văn hóa nổi tiếng tại trung tâm Sài Gòn.',
+    N'Ngày 1: Đón khách tại trung tâm -> Dinh Độc Lập -> Nhà Thờ Đức Bà -> Bưu Điện Thành Phố -> Chợ Bến Thành -> Kết thúc.',
+    d.DestinationId, 1, N'TP Hồ Chí Minh', 45, 33, 1290000, 790000, 1090000,
+    '2026-06-08 08:00:00', '2026-06-08 20:00:00',
+    N'Di tích lịch sử trung tâm, ẩm thực địa phương, hướng dẫn viên chuyên tuyến',
+    N'Xe đưa đón nội thành, vé tham quan, hướng dẫn viên, nước suối',
+    N'Chi tiêu cá nhân, đồ uống phát sinh',
+    N'Hủy trước 3 ngày hoàn 100%, từ 1-3 ngày hoàn 50%',
+    0, 'Available', 'Cultural', 'Easy', 1
+FROM dbo.Destinations d
+WHERE d.Name = N'Sài Gòn'
+  AND NOT EXISTS (SELECT 1 FROM dbo.Tours t WHERE t.TourCode = N'SG003')
+UNION ALL
+SELECT
+    N'HL003',
+    N'Khám Phá Hạ Long Trọn Gói: Vịnh Hạ Long - Hang Sửng Sốt - Đảo Ti Tốp - Du Thuyền Ngắm Hoàng Hôn',
+    N'Tour Hạ Long trọn gói với du thuyền nghỉ đêm và lịch trình điểm nhấn đặc trưng.',
+    N'Ngày 1: Hà Nội -> Hạ Long -> Du thuyền -> Hang Sửng Sốt -> Đảo Ti Tốp -> Ngắm hoàng hôn. Ngày 2: Tham quan vịnh -> Trở về.',
+    d.DestinationId, 2, N'Hà Nội', 40, 29, 3590000, 2190000, 3090000,
+    '2026-06-12 07:00:00', '2026-06-13 19:00:00',
+    N'Du thuyền chất lượng cao, trải nghiệm hoàng hôn trên vịnh, lịch trình cân bằng',
+    N'Xe khứ hồi, du thuyền 1 đêm, 3 bữa chính, vé tham quan',
+    N'Đồ uống ngoài chương trình, chi phí cá nhân',
+    N'Hủy trước 7 ngày hoàn 100%, từ 4-7 ngày hoàn 60%',
+    0, 'Available', 'Beach', 'Easy', 1
+FROM dbo.Destinations d
+WHERE d.Name = N'Hạ Long'
+  AND NOT EXISTS (SELECT 1 FROM dbo.Tours t WHERE t.TourCode = N'HL003')
+UNION ALL
+SELECT
+    N'MT002',
+    N'Hành Trình Miền Tây Sông Nước: Mỹ Tho - Bến Tre - Cồn Phụng - Trải Nghiệm Chợ Nổi Cái Răng',
+    N'Tour sông nước miền Tây kết hợp miệt vườn, chợ nổi và trải nghiệm văn hóa bản địa.',
+    N'Ngày 1: TP HCM -> Mỹ Tho -> Bến Tre -> Cồn Phụng. Ngày 2: Cần Thơ -> Chợ nổi Cái Răng -> Trở về.',
+    d.DestinationId, 2, N'TP Hồ Chí Minh', 42, 30, 2490000, 1490000, 2090000,
+    '2026-06-16 06:30:00', '2026-06-17 20:00:00',
+    N'Chợ nổi, xuồng ba lá, đờn ca tài tử, đặc sản miền Tây',
+    N'Xe đưa đón, khách sạn 3 sao, vé tham quan, 4 bữa ăn',
+    N'Chi phí cá nhân, đồ uống riêng',
+    N'Hủy trước 5 ngày hoàn 100%, từ 2-5 ngày hoàn 50%',
+    0, 'Available', 'Cultural', 'Easy', 1
+FROM dbo.Destinations d
+WHERE d.Name = N'Miền Tây'
+  AND NOT EXISTS (SELECT 1 FROM dbo.Tours t WHERE t.TourCode = N'MT002')
+UNION ALL
+SELECT
+    N'DN002',
+    N'Tour Nghỉ Dưỡng Đà Nẵng: Bà Nà Hills - Cầu Vàng - Ngũ Hành Sơn - Hội An Phố Cổ Về Đêm',
+    N'Tour kết hợp nghỉ dưỡng và tham quan biểu tượng miền Trung trong 3 ngày 2 đêm.',
+    N'Ngày 1: Đà Nẵng -> Ngũ Hành Sơn -> Hội An. Ngày 2: Bà Nà Hills -> Cầu Vàng. Ngày 3: Tự do mua sắm -> Kết thúc.',
+    d.DestinationId, 3, N'TP Hồ Chí Minh', 36, 27, 4290000, 2690000, 3690000,
+    '2026-06-20 08:00:00', '2026-06-22 20:00:00',
+    N'Bà Nà Hills, Cầu Vàng, phố cổ Hội An, dịch vụ nghỉ dưỡng',
+    N'Vé máy bay khứ hồi, khách sạn 4 sao, xe đưa đón, vé cáp treo',
+    N'Ăn uống tự do ngoài chương trình, mua sắm cá nhân',
+    N'Hủy trước 10 ngày hoàn 100%, từ 5-10 ngày hoàn 70%',
+    0, 'Available', 'Beach', 'Easy', 1
+FROM dbo.Destinations d
+WHERE d.Name = N'Đà Nẵng'
+  AND NOT EXISTS (SELECT 1 FROM dbo.Tours t WHERE t.TourCode = N'DN002')
+UNION ALL
+SELECT
+    N'DL002',
+    N'Khám Phá Đà Lạt Mộng Mơ: Langbiang - Thung Lũng Tình Yêu - Chợ Đêm Đà Lạt - Vườn Hoa Thành Phố',
+    N'Tour Đà Lạt thư giãn, phù hợp gia đình và nhóm bạn yêu thích khí hậu cao nguyên.',
+    N'Ngày 1: TP HCM -> Đà Lạt -> Langbiang -> Chợ đêm. Ngày 2: Thung lũng Tình Yêu -> Vườn hoa -> Trở về.',
+    d.DestinationId, 2, N'TP Hồ Chí Minh', 38, 28, 3190000, 1990000, 2790000,
+    '2026-06-25 07:30:00', '2026-06-26 21:00:00',
+    N'Langbiang, khí hậu mát mẻ, check-in vườn hoa, ẩm thực Đà Lạt',
+    N'Xe giường nằm, khách sạn 3 sao, vé tham quan, hướng dẫn viên',
+    N'Chi phí cá nhân, đồ uống ngoài chương trình',
+    N'Hủy trước 5 ngày hoàn 100%, từ 2-5 ngày hoàn 60%',
+    0, 'Available', 'Mountain', 'Easy', 1
+FROM dbo.Destinations d
+WHERE d.Name = N'Đà Lạt'
+  AND NOT EXISTS (SELECT 1 FROM dbo.Tours t WHERE t.TourCode = N'DL002');
+
 -- Coupons
 INSERT INTO dbo.Coupons (CouponCode, Description, DiscountType, DiscountValue, MaxDiscountAmount, 
                          MinPurchaseAmount, UsageLimit, UsagePerCustomer, StartDate, EndDate, IsActive, CreatedByUserId)

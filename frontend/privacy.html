@@ -11,7 +11,7 @@
     />
   </head>
 
-  <body>
+  <body class="terms-page">
     <!-- NAVIGATION BAR -->
     <nav class="navbar">
       <div class="navbar-container">
@@ -23,7 +23,7 @@
           <li><a href="index.html" class="nav-link">TRANG CHỦ</a></li>
           <li><a href="about.html" class="nav-link">GIỚI THIỆU</a></li>
           <li><a href="tours.html" class="nav-link">TOUR DU LỊCH</a></li>
-          <li><a href="#pricing" class="nav-link">BẢNG GIÁ</a></li>
+          <li><a href="pricing.html" class="nav-link">BẢNG GIÁ</a></li>
           <li><a href="#blog" class="nav-link">BLOG</a></li>
           <li><a href="#contact" class="nav-link">LIÊN HỆ</a></li>
         </ul>
@@ -41,103 +41,85 @@
     </nav>
 
     <!-- HERO SECTION -->
-    <section
-      class="hero-section"
-      style="
-        background-image: url(&quot;https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=400&fit=crop&quot;);
-      "
-    >
+    <section class="hero-section terms-hero">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <h1 class="hero-title">Chính sách bảo mật</h1>
         <p class="hero-subtitle">
-          Cách chúng tôi bảo vệ thông tin cá nhân của bạn
+          Cách Du Lịch Việt thu thập, sử dụng và bảo vệ dữ liệu của bạn
         </p>
       </div>
     </section>
 
     <!-- CONTENT -->
-    <section class="legal-section">
+    <section class="terms-section">
       <div class="container">
-        <div class="legal-content">
-          <h2>Chính sách Bảo mật Thông tin</h2>
+        <div class="terms-layout">
+          <aside class="terms-sidebar">
+            <nav class="terms-toc">
+              <h3>Mục lục nhanh</h3>
+              <a href="#collect"><i class="fas fa-database"></i>Thông tin thu thập</a>
+              <a href="#use"><i class="fas fa-gears"></i>Mục đích sử dụng</a>
+              <a href="#share"><i class="fas fa-share-nodes"></i>Chia sẻ dữ liệu</a>
+              <a href="#security"><i class="fas fa-shield-alt"></i>Bảo mật dữ liệu</a>
+              <a href="#rights"><i class="fas fa-user-check"></i>Quyền của bạn</a>
+              <a href="#contact"><i class="fas fa-headset"></i>Liên hệ</a>
+            </nav>
+          </aside>
 
-          <div class="legal-item">
-            <h3>1. Thông tin chúng tôi thu thập</h3>
-            <p>Du Lịch Việt thu thập các thông tin sau từ bạn:</p>
-            <ul>
-              <li>Thông tin cá nhân: Tên, Email, Số điện thoại, Địa chỉ</li>
-              <li>Thông tin thanh toán: Số tài khoản, Chi tiết thẻ tín dụng</li>
-              <li>
-                Thông tin hành vi: Trang web bạn truy cập, Thời gian bạn dành,
-                Các tour bạn xem
-              </li>
-            </ul>
-          </div>
+          <div class="terms-content">
+            <article class="terms-card" id="collect">
+              <h3><i class="fas fa-database"></i>Thông tin chúng tôi thu thập</h3>
+              <p>
+                Chúng tôi chỉ thu thập thông tin cần cho việc đặt tour và hỗ trợ
+                khách hàng: họ tên, số điện thoại, email, thông tin hành khách và
+                dữ liệu thanh toán ở mức cần thiết.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>2. Cách chúng tôi sử dụng thông tin</h3>
-            <p>Chúng tôi sử dụng thông tin bạn cung cấp để:</p>
-            <ul>
-              <li>Xử lý đơn đặt tour của bạn</li>
-              <li>Cải thiện dịch vụ và trải nghiệm người dùng</li>
-              <li>Gửi thông tin cập nhật và khuyến mãi (nếu bạn đồng ý)</li>
-              <li>Tuân thủ các yêu cầu pháp lý</li>
-            </ul>
-          </div>
+            <article class="terms-card" id="use">
+              <h3><i class="fas fa-gears"></i>Mục đích sử dụng dữ liệu</h3>
+              <p>
+                Dữ liệu được dùng để xác nhận đơn, liên hệ trước chuyến đi, xử lý
+                thanh toán, chăm sóc sau bán và cải thiện trải nghiệm dịch vụ.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>3. Bảo vệ Dữ liệu</h3>
-            <p>Chúng tôi cam kết bảo vệ dữ liệu cá nhân của bạn bằng:</p>
-            <ul>
-              <li>Mã hóa SSL/TLS cho tất cả dữ liệu nhạy cảm</li>
-              <li>Kiểm tra bảo mật thường xuyên</li>
-              <li>Kiểm soát truy cập chặt chẽ</li>
-              <li>Chính sách bảo mật nhân viên nghiêm ngặt</li>
-            </ul>
-          </div>
+            <article class="terms-card" id="share">
+              <h3><i class="fas fa-share-nodes"></i>Chia sẻ thông tin</h3>
+              <p>
+                Du Lịch Việt không bán dữ liệu cá nhân. Thông tin chỉ được chia sẻ
+                cho đối tác liên quan đến việc thực hiện tour hoặc khi có yêu cầu
+                hợp pháp từ cơ quan chức năng.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>4. Chia sẻ Thông tin</h3>
-            <p>
-              Chúng tôi không chia sẻ thông tin cá nhân của bạn với bên thứ ba
-              trừ khi:
-            </p>
-            <ul>
-              <li>Cần thiết để xử lý thanh toán của bạn</li>
-              <li>Bạn cho phép</li>
-              <li>Yêu cầu pháp lý</li>
-            </ul>
-          </div>
+            <article class="terms-card" id="security">
+              <h3><i class="fas fa-shield-alt"></i>Bảo mật và lưu trữ</h3>
+              <p>
+                Chúng tôi áp dụng biện pháp kỹ thuật và quy trình nội bộ để bảo vệ
+                dữ liệu, giới hạn truy cập theo vai trò và lưu trữ trong thời gian
+                cần thiết theo mục đích vận hành hoặc quy định pháp luật.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>5. Cookie và Theo dõi</h3>
-            <p>
-              Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn. Bạn có
-              thể tắt cookie trong cài đặt trình duyệt của mình.
-            </p>
-          </div>
+            <article class="terms-card" id="rights">
+              <h3><i class="fas fa-user-check"></i>Quyền của khách hàng</h3>
+              <p>
+                Bạn có quyền yêu cầu xem, cập nhật hoặc xóa dữ liệu cá nhân (trong
+                phạm vi pháp luật cho phép), và có thể từ chối nhận thông tin tiếp
+                thị bất cứ lúc nào.
+              </p>
+            </article>
 
-          <div class="legal-item">
-            <h3>6. Quyền của bạn</h3>
-            <p>Bạn có quyền:</p>
-            <ul>
-              <li>Yêu cầu xem dữ liệu cá nhân của mình</li>
-              <li>Yêu cầu sửa hoặc xóa dữ liệu</li>
-              <li>Từ chối tiếp thị email</li>
-              <li>Liên hệ với chúng tôi để hỗ trợ</li>
-            </ul>
-          </div>
-
-          <div class="legal-item">
-            <h3>7. Liên hệ</h3>
-            <p>Nếu bạn có câu hỏi về chính sách bảo mật, vui lòng liên hệ:</p>
-            <p>
-              <strong>Email:</strong> privacy@dulichviet.com<br /><strong
-                >Điện thoại:</strong
-              >
-              (028) 1234 5678
-            </p>
+            <article class="terms-card terms-contact" id="contact">
+              <h3><i class="fas fa-headset"></i>Liên hệ xử lý dữ liệu</h3>
+              <p>Khi cần hỗ trợ về quyền riêng tư, vui lòng liên hệ:</p>
+              <p>
+                <strong>Email:</strong> privacy@dulichviet.com<br />
+                <strong>Hotline:</strong> (028) 1234 5678
+              </p>
+            </article>
           </div>
         </div>
       </div>
