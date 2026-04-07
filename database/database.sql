@@ -1,8 +1,247 @@
-
 IF DB_ID(N'QuanLy_Tour') IS NULL
 BEGIN
     CREATE DATABASE [QuanLy_Tour];
 END
+GO
+
+-- ============================================
+-- 6. FRONTEND/BACKEND DATA SYNC (LATEST)
+-- Đồng bộ dữ liệu hiển thị hiện tại từ ứng dụng về database.sql
+-- ============================================
+
+-- Bổ sung điểm đến nếu thiếu (theo dữ liệu app hiện tại)
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Hạ Long', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Quảng Ninh', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Hạ Long');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Phú Quốc', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Kiên Giang', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Phú Quốc');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Sapa', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Lào Cai', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Sapa');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Hội An', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Quảng Nam', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Hội An');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Mù Cang Chải', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Yên Bái', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Mù Cang Chải');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Nha Trang', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Khánh Hòa', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Nha Trang');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Đà Lạt', N'Điểm đến đồng bộ từ frontend/backend', N'Việt Nam', N'Lâm Đồng', 0, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Đà Lạt');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Bangkok', N'Điểm đến đồng bộ từ frontend/backend', N'Thái Lan', N'Bangkok', 1, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Bangkok');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Angkor Wat', N'Điểm đến đồng bộ từ frontend/backend', N'Campuchia', N'Siem Reap', 1, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Angkor Wat');
+
+INSERT INTO dbo.Destinations (Name, Description, Country, Province, IsInternational, IsActive)
+SELECT N'Bali', N'Điểm đến đồng bộ từ frontend/backend', N'Indonesia', N'Bali', 1, 1
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Destinations WHERE Name = N'Bali');
+
+DECLARE @TourSync TABLE (
+    TourCode NVARCHAR(50) NOT NULL,
+    TourName NVARCHAR(255) NOT NULL,
+    DestinationName NVARCHAR(150) NOT NULL,
+    DurationDays INT NOT NULL,
+    PricePerAdult DECIMAL(12, 2) NOT NULL,
+    TourType NVARCHAR(50) NOT NULL,
+    IsInternational BIT NOT NULL
+);
+
+INSERT INTO @TourSync (TourCode, TourName, DestinationName, DurationDays, PricePerAdult, TourType, IsInternational)
+VALUES
+    (N'HL001', N'Hạ Long Bay 2 Ngày 1 Đêm', N'Hạ Long', 2, 1500000, N'Beach', 0),
+    (N'HL002', N'Hạ Long Bay 3 Ngày 2 Đêm - Deluxe', N'Hạ Long', 3, 2500000, N'Beach', 0),
+    (N'PQ001', N'Phú Quốc Paradise 4 Ngày 3 Đêm', N'Phú Quốc', 4, 3500000, N'Beach', 0),
+    (N'SP001', N'Sapa Trekking & Mountain Adventure 3 Ngày', N'Sapa', 3, 2000000, N'Mountain', 0),
+    (N'HA001', N'Hội An - Mỹ Sơn 2 Ngày 1 Đêm', N'Hội An', 2, 1200000, N'Cultural', 0),
+    (N'MCC001', N'Mù Cang Chải - Ruộng Bậc Thang Vàng 2 Ngày', N'Mù Cang Chải', 2, 1500000, N'Mountain', 0),
+    (N'NT001', N'Nha Trang Biển Xanh 3 Ngày 2 Đêm', N'Nha Trang', 3, 2200000, N'Beach', 0),
+    (N'DL001', N'Đà Lạt - Thành Phố Ngàn Hoa 2 Ngày 1 Đêm', N'Đà Lạt', 2, 1800000, N'Mountain', 0),
+    (N'BKK001', N'Bangkok - Thái Lan 3 Ngày 2 Đêm', N'Bangkok', 3, 2800000, N'Cultural', 1),
+    (N'ANGKOR001', N'Campuchia - Angkor Wat 3 Ngày 2 Đêm', N'Angkor Wat', 3, 3200000, N'Cultural', 1),
+    (N'BALI001', N'Bali - Indonesia 4 Ngày 3 Đêm', N'Bali', 4, 4200000, N'Beach', 1);
+
+;WITH TourSource AS (
+    SELECT
+        ts.TourCode,
+        ts.TourName,
+        d.DestinationId,
+        ts.DurationDays,
+        ts.PricePerAdult,
+        ts.TourType,
+        ts.IsInternational
+    FROM @TourSync ts
+    INNER JOIN dbo.Destinations d ON d.Name = ts.DestinationName
+)
+MERGE dbo.Tours AS target
+USING TourSource AS source
+ON target.TourCode = source.TourCode
+WHEN MATCHED THEN
+    UPDATE SET
+        target.TourName = source.TourName,
+        target.DestinationId = source.DestinationId,
+        target.Duration = source.DurationDays,
+        target.PricePerAdult = source.PricePerAdult,
+        target.TourType = source.TourType,
+        target.IsInternational = source.IsInternational,
+        target.Status = 'Available',
+        target.UpdatedAt = GETDATE()
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT (
+        TourCode, TourName, Description, ItineraryDetails, DestinationId, Duration,
+        DepartureCity, Capacity, AvailableSeats, PricePerAdult, PricePerChild, PricePerSenior,
+        StartDate, EndDate, Highlights, Included, NotIncluded, CancellationPolicy,
+        IsInternational, Status, TourType, DifficultyLevel, CreatedByUserId
+    )
+    VALUES (
+        source.TourCode,
+        source.TourName,
+        N'Dữ liệu đồng bộ tự động từ frontend/backend.',
+        N'Lịch trình chi tiết sẽ được cập nhật thêm.',
+        source.DestinationId,
+        source.DurationDays,
+        N'TP Hồ Chí Minh',
+        40,
+        30,
+        source.PricePerAdult,
+        CAST(source.PricePerAdult * 0.65 AS DECIMAL(12,2)),
+        CAST(source.PricePerAdult * 0.85 AS DECIMAL(12,2)),
+        '2026-07-01 00:00:00',
+        '2026-07-05 00:00:00',
+        N'Đồng bộ dữ liệu từ ứng dụng',
+        N'Bao gồm dịch vụ cơ bản',
+        N'Không bao gồm chi tiêu cá nhân',
+        N'Hủy trước 7 ngày hoàn 100%',
+        source.IsInternational,
+        'Available',
+        source.TourType,
+        'Easy',
+        1
+    );
+
+GO
+
+-- ============================================
+-- 7. BOOKING DATA SYNC (LATEST)
+-- Đồng bộ booking demo từ backend/data/bookings.json về DB
+-- ============================================
+
+DECLARE @BookingSync TABLE (
+    BookingCode NVARCHAR(50) NOT NULL,
+    TourCode NVARCHAR(50) NOT NULL,
+    FullName NVARCHAR(150) NOT NULL,
+    Email NVARCHAR(150) NOT NULL,
+    PhoneNumber NVARCHAR(20) NULL,
+    Guests INT NOT NULL,
+    BookingStatus NVARCHAR(50) NOT NULL,
+    BookingDate DATETIME NOT NULL
+);
+
+-- Dữ liệu hiện tại từ backend/data/bookings.json
+-- tourId "tour-1" map sang TourCode "HL001" theo backend/data/tours.json
+INSERT INTO @BookingSync (
+    BookingCode, TourCode, FullName, Email, PhoneNumber, Guests, BookingStatus, BookingDate
+)
+VALUES (
+    N'booking-1775531912284', N'HL001', N'Nguyen Van A', N'a@example.com',
+    N'0901234567', 1, N'Pending', '2026-04-07T03:18:32.284'
+);
+
+-- Đảm bảo user khách hàng tồn tại trước khi tạo booking
+MERGE dbo.Users AS target
+USING (
+    SELECT DISTINCT
+        bs.FullName,
+        bs.Email,
+        bs.PhoneNumber
+    FROM @BookingSync bs
+) AS source
+ON target.Email = source.Email
+WHEN MATCHED THEN
+    UPDATE SET
+        target.FullName = source.FullName,
+        target.PhoneNumber = source.PhoneNumber,
+        target.UpdatedAt = GETDATE()
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT (
+        FullName, Email, PhoneNumber, Password, City, Country, RoleId, IsActive, IsEmailVerified
+    )
+    VALUES (
+        source.FullName,
+        source.Email,
+        source.PhoneNumber,
+        '$2b$10$abcdef1234567890abcdef',
+        N'TP Hồ Chí Minh',
+        N'Việt Nam',
+        3,
+        1,
+        1
+    );
+
+;WITH BookingSource AS (
+    SELECT
+        bs.BookingCode,
+        u.UserId,
+        t.TourId,
+        bs.Guests AS NumberOfAdults,
+        bs.Guests AS TotalParticipants,
+        t.PricePerAdult AS PricePerPerson,
+        CAST(t.PricePerAdult * bs.Guests AS DECIMAL(12,2)) AS SubTotal,
+        CAST(0 AS DECIMAL(12,2)) AS DiscountAmount,
+        CAST(t.PricePerAdult * bs.Guests AS DECIMAL(12,2)) AS TotalAmount,
+        bs.BookingStatus AS Status,
+        N'Unpaid' AS PaymentStatus,
+        bs.BookingDate
+    FROM @BookingSync bs
+    INNER JOIN dbo.Users u ON u.Email = bs.Email
+    INNER JOIN dbo.Tours t ON t.TourCode = bs.TourCode
+)
+MERGE dbo.Bookings AS target
+USING BookingSource AS source
+ON target.BookingCode = source.BookingCode
+WHEN MATCHED THEN
+    UPDATE SET
+        target.UserId = source.UserId,
+        target.TourId = source.TourId,
+        target.NumberOfAdults = source.NumberOfAdults,
+        target.NumberOfChildren = 0,
+        target.NumberOfSeniors = 0,
+        target.TotalParticipants = source.TotalParticipants,
+        target.PricePerPerson = source.PricePerPerson,
+        target.SubTotal = source.SubTotal,
+        target.DiscountAmount = source.DiscountAmount,
+        target.CouponApplied = NULL,
+        target.TaxAmount = 0,
+        target.TotalAmount = source.TotalAmount,
+        target.Status = source.Status,
+        target.PaymentStatus = source.PaymentStatus,
+        target.BookingDate = source.BookingDate,
+        target.UpdatedAt = GETDATE()
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT (
+        BookingCode, UserId, TourId, NumberOfAdults, NumberOfChildren, NumberOfSeniors,
+        TotalParticipants, PricePerPerson, SubTotal, DiscountAmount, CouponApplied,
+        TaxAmount, TotalAmount, Status, PaymentStatus, BookingDate
+    )
+    VALUES (
+        source.BookingCode, source.UserId, source.TourId, source.NumberOfAdults, 0, 0,
+        source.TotalParticipants, source.PricePerPerson, source.SubTotal, source.DiscountAmount, NULL,
+        0, source.TotalAmount, source.Status, source.PaymentStatus, source.BookingDate
+    );
+
 GO
 
 USE [QuanLy_Tour];

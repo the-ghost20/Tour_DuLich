@@ -2,7 +2,7 @@
 
 ## Project status
 
-Frontend static website is complete and ready to run locally.
+Frontend + backend API are available and can run locally.
 
 ---
 
@@ -14,6 +14,10 @@ DoAn-TourDuLich-main/
 ├── README.md
 ├── database/
 │   └── database.sql           # Database schema + sample data
+├── backend/
+│   ├── src/server.js          # Express API server
+│   ├── data/tours.json        # Sample tours data
+│   └── data/bookings.json     # Booking records
 └── frontend/
     ├── index.html             # Homepage
     ├── tours.html             # Tour listing page
@@ -31,6 +35,18 @@ DoAn-TourDuLich-main/
 ---
 
 ## Run project locally
+
+### 1) Run backend API
+
+```bash
+cd Tour_DuLich/backend
+npm install
+npm run dev
+```
+
+Backend URL:
+- `http://localhost:4000`
+- Health check: `http://localhost:4000/api/health`
 
 ### Option 1: Run from project root (recommended)
 
@@ -62,3 +78,9 @@ Open:
 ```bash
 python3 -m http.server 5501
 ```
+
+- Frontend booking/login in `frontend/js/script.js` now calls backend API:
+  - `POST /api/auth/login`
+  - `POST /api/bookings`
+  - `GET /api/tours`
+- Tours API is auto-seeded from `database/database.sql` (tables `Destinations` + `Tours` sample data).

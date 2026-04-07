@@ -13,12 +13,11 @@ const priceValue = document.getElementById("price-value");
 const applyFilterBtn = document.getElementById("apply-filter");
 const clearFilterBtn = document.getElementById("clear-filter");
 const loginBtn = document.querySelector(".btn-login");
-const wishlistBtns = document.querySelectorAll(".btn-wishlist");
-const bookBtns = document.querySelectorAll(".btn-book");
 const mobileToggle = document.querySelector(".mobile-toggle");
 const navbarMenu = document.querySelector(".navbar-menu");
 const toursGrid = document.getElementById("tours-grid");
 const wishlistItemsContainer = document.getElementById("wishlist-items");
+const hotToursGrid = document.getElementById("hot-tours-grid");
 
 // ========== State Management ==========
 let currentFilters = {
@@ -30,13 +29,22 @@ let currentFilters = {
 };
 
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+const API_BASE_URL = "http://localhost:4000/api";
 
 // ========== Initialize ==========
 document.addEventListener("DOMContentLoaded", () => {
+  bootstrapDataFromBackend();
   initializeEventListeners();
   loadWishlistUI();
   setupPriceSlider();
+  loadAboutStats();
 });
+
+async function bootstrapDataFromBackend() {
+  await Promise.all([loadToursFromApi(), loadHotToursFromApi()]);
+  bindDynamicCardActions();
+  loadWishlistUI();
+}
 
 // ========== Event Listeners ==========
 function initializeEventListeners() {
@@ -88,19 +96,179 @@ function initializeEventListeners() {
     heroSearchBtn.addEventListener("click", handleHeroSearch);
   }
 
-  // Wishlist buttons
-  wishlistBtns.forEach((btn) => {
-    btn.addEventListener("click", toggleWishlist);
-  });
-
-  // Book buttons
-  bookBtns.forEach((btn) => {
-    btn.addEventListener("click", handleBooking);
-  });
-
   // Login button
   if (loginBtn) {
     loginBtn.addEventListener("click", handleLogin);
+  }
+}
+
+function bindDynamicCardActions() {
+  const wishlistBtns = document.querySelectorAll(".btn-wishlist");
+  const bookBtns = document.querySelectorAll(".btn-book");
+
+  wishlistBtns.forEach((btn) => {
+    if (!btn.dataset.boundWishlist) {
+      btn.addEventListener("click", toggleWishlist);
+      btn.dataset.boundWishlist = "1";
+    }
+  });
+
+  bookBtns.forEach((btn) => {
+    if (!btn.dataset.boundBooking) {
+      btn.addEventListener("click", handleBooking);
+      btn.dataset.boundBooking = "1";
+    }
+  });
+}
+
+function formatPrice(value) {
+  return Number(value || 0).toLocaleString("vi-VN") + " đ";
+}
+
+function normalizeDurationLabel(duration) {
+  if (!duration) return "1 ngày";
+  const days = Number(duration.toString().replace(/\D/g, ""));
+  if (!days || Number.isNaN(days)) return duration;
+  return `${days} ngày`;
+}
+
+function durationFilterTag(duration) {
+  const days = Number(duration.toString().replace(/\D/g, ""));
+  if (days <= 1) return "1-day";
+  if (days === 2) return "2-day";
+  if (days === 3) return "3-day";
+  return "4-day";
+}
+
+function getTourImageUrl(index) {
+  const images = [
+    "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop",
+    "https://images.unsplash.com/photo-1537225228614-b4fad34a0b60?w=400&h=300&fit=crop",
+    "https://images.unsplash.com/photo-1584422604131-a971d26d8f44?w=400&h=300&fit=crop",
+    "https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=400&h=300&fit=crop",
+    "https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=300&fit=crop",
+    "https://images.unsplash.com/photo-1465311440653-ba9b1d9b0f5b?w=400&h=300&fit=crop",
+  ];
+  return images[index % images.length];
+}
+
+async function loadToursFromApi() {
+  if (!toursGrid) return;
+  try {
+    const response = await fetch(`${API_BASE_URL}/tours`);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Không tải được dữ liệu tour");
+    }
+
+    toursGrid.innerHTML = data.items
+      .map((tour, index) => {
+        const duration = normalizeDurationLabel(tour.duration);
+        const rating = Number(tour.rating || 4.5);
+        const fullStars = Math.floor(rating);
+        const hasHalf = rating - fullStars >= 0.5;
+        const stars = Array.from({ length: 5 }, (_, i) => {
+          if (i < fullStars) return '<i class="fas fa-star"></i>';
+          if (i === fullStars && hasHalf) return '<i class="fas fa-star-half-alt"></i>';
+          return '<i class="far fa-star"></i>';
+        }).join("");
+
+        return `
+          <div class="tour-card"
+            data-tour-id="${tour.id}"
+            data-destination="${tour.destination || ""}"
+            data-duration="${durationFilterTag(duration)}"
+            data-type="${tour.type || ""}"
+            data-rating="${rating}">
+            <div class="tour-card-image">
+              <img src="${getTourImageUrl(index)}" alt="${tour.name}" />
+              <div class="tour-card-overlay">
+                <button class="btn-wishlist" title="Thêm vào yêu thích">
+                  <i class="fas fa-heart"></i>
+                </button>
+              </div>
+            </div>
+            <div class="tour-card-content">
+              <h3>${tour.name}</h3>
+              <div class="tour-meta">
+                <span class="tour-duration"><i class="fas fa-calendar"></i> ${duration}</span>
+                <span class="tour-destination"><i class="fas fa-map-marker-alt"></i> ${tour.destinationName || tour.destination}</span>
+              </div>
+              <div class="tour-rating">
+                <div class="stars">${stars}</div>
+                <span class="rating-count">(${Math.max(40, Math.round(rating * 30))} đánh giá)</span>
+              </div>
+              <div class="tour-card-footer">
+                <span class="tour-price">${formatPrice(tour.price)}</span>
+                <button class="btn-book">Đặt Ngay</button>
+              </div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  } catch (error) {
+    showNotification(error.message || "Không kết nối được backend", "error");
+  }
+}
+
+async function loadHotToursFromApi() {
+  if (!hotToursGrid) return;
+  try {
+    const response = await fetch(`${API_BASE_URL}/tours`);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Không tải được dữ liệu tour");
+    }
+    const topTours = [...data.items]
+      .sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0))
+      .slice(0, 6);
+
+    hotToursGrid.innerHTML = topTours
+      .map(
+        (tour, index) => `
+        <div class="hot-tour-card">
+          <div class="tour-image">
+            <img src="${getTourImageUrl(index)}" alt="${tour.name}" />
+            <span class="hot-badge">Hot Tour</span>
+          </div>
+          <div class="tour-info">
+            <h3>${tour.name}</h3>
+            <div class="tour-price">
+              <span class="price">${formatPrice(tour.price)}</span>
+            </div>
+            <a href="tours.html" class="btn-detail">Chi tiết</a>
+          </div>
+        </div>
+      `,
+      )
+      .join("");
+  } catch (_error) {
+    // Keep current static content if API fails on home page.
+  }
+}
+
+async function loadAboutStats() {
+  const stats = document.querySelectorAll(".stats-section .stat-item h3");
+  if (!stats || stats.length < 3) return;
+
+  try {
+    const [toursRes, bookingsRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/tours`),
+      fetch(`${API_BASE_URL}/bookings`),
+    ]);
+    const toursData = await toursRes.json();
+    const bookingsData = await bookingsRes.json();
+
+    if (toursRes.ok) {
+      stats[2].textContent = `${toursData.count || 0}+`;
+    }
+    if (bookingsRes.ok) {
+      stats[1].textContent = `${bookingsData.count || 0}+`;
+      stats[0].textContent = `${Math.max(100, (bookingsData.count || 0) * 8)}+`;
+    }
+  } catch (_error) {
+    // Keep static stats if backend is unavailable.
   }
 }
 
@@ -342,6 +510,7 @@ function toggleWishlist(e) {
 }
 
 function loadWishlistUI() {
+  const wishlistBtns = document.querySelectorAll(".btn-wishlist");
   // Update buttons
   wishlistBtns.forEach((btn) => {
     const tourCard = btn.closest(".tour-card");
@@ -379,7 +548,8 @@ function handleBooking(e) {
   const btn = e.currentTarget;
   const tourCard = btn.closest(".tour-card");
   const tourName = tourCard.querySelector("h3").textContent;
-  const tourPrice = tourCard.querySelector(".tour-price").textContent;
+  const tourId =
+    tourCard.getAttribute("data-tour-id") || `tour-${tourName.toLowerCase()}`;
 
   // Check if logged in
   const isLoggedIn = localStorage.getItem("userToken");
@@ -389,17 +559,75 @@ function handleBooking(e) {
     return;
   }
 
-  // Redirect to booking page
-  console.log(`Đặt tour: ${tourName} - ${tourPrice}`);
-  showNotification(`Bạn sắp đặt tour: ${tourName}`, "success");
-  // window.location.href = `/booking?tour=${encodeURIComponent(tourName)}`;
+  const fullName =
+    localStorage.getItem("userFullName") ||
+    prompt("Nhập họ tên để hoàn tất đặt tour:");
+  const phone = prompt("Nhập số điện thoại liên hệ:");
+
+  if (!fullName || !phone) {
+    showNotification("Bạn cần nhập đủ họ tên và số điện thoại", "warning");
+    return;
+  }
+
+  fetch(`${API_BASE_URL}/bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${isLoggedIn}`,
+    },
+    body: JSON.stringify({
+      tourId,
+      tourName,
+      fullName,
+      phone,
+      email: localStorage.getItem("userEmail") || "",
+      guests: 1,
+    }),
+  })
+    .then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Không thể đặt tour");
+      }
+      showNotification(`Đặt tour thành công: ${tourName}`, "success");
+    })
+    .catch((error) => {
+      showNotification(error.message || "Lỗi kết nối backend", "error");
+    });
 }
 
 // ========== Login Function ==========
 function handleLogin(e) {
   if (e) e.preventDefault();
-  showNotification("Chuyển hướng đến trang đăng nhập...", "info");
-  // window.location.href = '/login';
+  const email = prompt("Email đăng nhập:");
+  const password = prompt("Mật khẩu:");
+
+  if (!email || !password) {
+    showNotification("Bạn đã hủy đăng nhập", "info");
+    return;
+  }
+
+  fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  })
+    .then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Đăng nhập thất bại");
+      }
+
+      localStorage.setItem("userToken", data.token);
+      localStorage.setItem("userEmail", data.user.email);
+      localStorage.setItem("userFullName", data.user.fullName || "");
+      showNotification("Đăng nhập thành công!", "success");
+    })
+    .catch((error) => {
+      showNotification(error.message || "Không thể kết nối backend", "error");
+    });
 }
 
 // ========== Notification System ==========
