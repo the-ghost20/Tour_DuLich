@@ -237,7 +237,7 @@ async function loadHotToursFromApi() {
             <div class="tour-price">
               <span class="price">${formatPrice(tour.price)}</span>
             </div>
-            <a href="tours.html" class="btn-detail">Chi tiết</a>
+            <a href="tours.php" class="btn-detail">Chi tiết</a>
           </div>
         </div>
       `,
@@ -423,7 +423,7 @@ function handleHeroSearch(e) {
   const searchValue = heroSearchInput?.value || "";
   if (searchValue.trim()) {
     // Redirect to tours page with search query
-    window.location.href = `tours.html?search=${encodeURIComponent(
+    window.location.href = `tours.php?search=${encodeURIComponent(
       searchValue,
     )}`;
   } else {
