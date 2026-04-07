@@ -12,7 +12,6 @@ const priceSlider = document.getElementById("price-slider");
 const priceValue = document.getElementById("price-value");
 const applyFilterBtn = document.getElementById("apply-filter");
 const clearFilterBtn = document.getElementById("clear-filter");
-const loginBtn = document.querySelector(".btn-login");
 const mobileToggle = document.querySelector(".mobile-toggle");
 const navbarMenu = document.querySelector(".navbar-menu");
 const toursGrid = document.getElementById("tours-grid");
@@ -38,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadWishlistUI();
   setupPriceSlider();
   loadAboutStats();
+  setupLoginModal();
 });
 
 async function bootstrapDataFromBackend() {
@@ -95,11 +95,181 @@ function initializeEventListeners() {
   if (heroSearchBtn) {
     heroSearchBtn.addEventListener("click", handleHeroSearch);
   }
+}
 
-  // Login button
-  if (loginBtn) {
-    loginBtn.addEventListener("click", handleLogin);
+function setupLoginModal() {
+  const trigger = document.querySelector('[data-login-trigger="1"]');
+  const modal = document.getElementById("login-modal");
+  if (!trigger || !modal) return;
+
+  const closeBtn = document.getElementById("login-modal-close");
+  const emailInput = modal.querySelector("#login-modal-email");
+  const tabTriggers = modal.querySelectorAll("[data-auth-tab-trigger]");
+  const tabPanels = modal.querySelectorAll("[data-auth-tab]");
+  const modalTitle = modal.querySelector("#login-modal-title");
+  const modalSubtitle = modal.querySelector("#login-modal-subtitle");
+  const messageBox = modal.querySelector("#auth-modal-message");
+  const forgotForm = modal.querySelector("#auth-forgot-form");
+
+  const loginTitle = "Chào mừng quay lại";
+  const loginSubtitle =
+    "Đăng nhập để đặt tour nhanh hơn và theo dõi lịch sử chuyến đi.";
+  const forgotTitle = "Đặt lại mật khẩu";
+  const forgotSubtitle =
+    "Nhập email hoặc số điện thoại đã đăng ký để đặt mật khẩu mới.";
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^[0-9]{8,14}$/;
+
+  function showAuthMessage(text, type = "error") {
+    if (!messageBox) return;
+    messageBox.textContent = text;
+    messageBox.classList.remove("is-error", "is-success");
+    messageBox.classList.add(type === "success" ? "is-success" : "is-error");
   }
+
+  function clearAuthMessage() {
+    if (!messageBox) return;
+    messageBox.textContent = "";
+    messageBox.classList.remove("is-error", "is-success");
+  }
+
+  function switchAuthTab(tabName) {
+    tabPanels.forEach((panel) => {
+      const shouldShow = panel.dataset.authTab === tabName;
+      panel.classList.toggle("auth-panel-hidden", !shouldShow);
+      panel.hidden = !shouldShow;
+    });
+
+    if (modalTitle && modalSubtitle) {
+      if (tabName === "forgot") {
+        modalTitle.textContent = forgotTitle;
+        modalSubtitle.textContent = forgotSubtitle;
+      } else {
+        modalTitle.textContent = loginTitle;
+        modalSubtitle.textContent = loginSubtitle;
+      }
+    }
+
+    clearAuthMessage();
+
+    if (tabName === "forgot") {
+      const forgotIdentity = modal.querySelector("#forgot-identity");
+      setTimeout(() => forgotIdentity?.focus(), 50);
+    } else {
+      setTimeout(() => emailInput?.focus(), 50);
+    }
+  }
+
+  function openModal(event) {
+    if (event) {
+      event.preventDefault();
+    }
+    modal.classList.add("is-open");
+    document.body.classList.add("login-modal-open");
+    switchAuthTab("login");
+  }
+
+  function closeModal() {
+    modal.classList.remove("is-open");
+    document.body.classList.remove("login-modal-open");
+    clearAuthMessage();
+    if (forgotForm) {
+      forgotForm.reset();
+    }
+  }
+
+  trigger.addEventListener("click", openModal);
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      closeModal();
+    });
+  }
+
+  tabTriggers.forEach((el) => {
+    el.addEventListener("click", (event) => {
+      if (el.tagName === "A") {
+        event.preventDefault();
+      }
+      const targetTab = el.dataset.authTabTrigger;
+      if (targetTab) {
+        switchAuthTab(targetTab);
+      }
+    });
+  });
+
+  if (forgotForm) {
+    forgotForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const identityInput = forgotForm.querySelector("#forgot-identity");
+      const countryCodeInput = forgotForm.querySelector("#forgot-country-code");
+      const newPasswordInput = forgotForm.querySelector("#forgot-new-password");
+      const confirmPasswordInput = forgotForm.querySelector(
+        "#forgot-confirm-password",
+      );
+
+      const identity = (identityInput?.value || "").trim();
+      const countryCode = (countryCodeInput?.value || "+84").trim();
+      const newPassword = newPasswordInput?.value || "";
+      const confirmPassword = confirmPasswordInput?.value || "";
+
+      if (!identity) {
+        showAuthMessage("Vui lòng nhập email hoặc số điện thoại.");
+        return;
+      }
+
+      const identityIsEmail = emailRegex.test(identity);
+      const normalizedPhone = identity.replace(/\s|-/g, "");
+      const identityIsPhone = phoneRegex.test(normalizedPhone);
+
+      if (!identityIsEmail && !identityIsPhone) {
+        showAuthMessage(
+          "Định dạng chưa hợp lệ. Hãy nhập email hoặc số điện thoại 8-14 chữ số.",
+        );
+        return;
+      }
+
+      if (identityIsPhone && !countryCode.startsWith("+")) {
+        showAuthMessage("Mã quốc gia phải bắt đầu bằng dấu + (ví dụ: +84).");
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        showAuthMessage("Mật khẩu mới phải có ít nhất 8 ký tự.");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        showAuthMessage("Xác nhận mật khẩu chưa khớp.");
+        return;
+      }
+
+      const destination = identityIsEmail
+        ? identity
+        : `${countryCode}${normalizedPhone}`;
+
+      showAuthMessage(
+        `Yêu cầu đổi mật khẩu đã được ghi nhận cho ${destination}.`,
+        "success",
+      );
+      forgotForm.reset();
+    });
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-open")) {
+      closeModal();
+    }
+  });
 }
 
 function bindDynamicCardActions() {
@@ -552,10 +722,11 @@ function handleBooking(e) {
     tourCard.getAttribute("data-tour-id") || `tour-${tourName.toLowerCase()}`;
 
   // Check if logged in
+  // Tạm thời bỏ luồng login bằng API, chỉ nhắc người dùng đăng nhập qua trang login.php
   const isLoggedIn = localStorage.getItem("userToken");
   if (!isLoggedIn) {
-    showNotification("Vui lòng đăng nhập để đặt tour!", "warning");
-    handleLogin();
+    showNotification("Vui lòng đăng nhập tại trang đăng nhập để đặt tour!", "warning");
+    window.location.href = "login.php";
     return;
   }
 
@@ -596,39 +767,7 @@ function handleBooking(e) {
     });
 }
 
-// ========== Login Function ==========
-function handleLogin(e) {
-  if (e) e.preventDefault();
-  const email = prompt("Email đăng nhập:");
-  const password = prompt("Mật khẩu:");
-
-  if (!email || !password) {
-    showNotification("Bạn đã hủy đăng nhập", "info");
-    return;
-  }
-
-  fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  })
-    .then(async (response) => {
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Đăng nhập thất bại");
-      }
-
-      localStorage.setItem("userToken", data.token);
-      localStorage.setItem("userEmail", data.user.email);
-      localStorage.setItem("userFullName", data.user.fullName || "");
-      showNotification("Đăng nhập thành công!", "success");
-    })
-    .catch((error) => {
-      showNotification(error.message || "Không thể kết nối backend", "error");
-    });
-}
+// Hàm handleLogin cũ không còn dùng tới (đã chuyển sang login.php)
 
 // ========== Notification System ==========
 function showNotification(message, type = "info") {

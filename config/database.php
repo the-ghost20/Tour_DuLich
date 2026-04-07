@@ -1,15 +1,12 @@
 <?php
 declare(strict_types=1);
 
-$dbHost = getenv('DB_HOST') ?: '127.0.0.1';
-$dbName = getenv('DB_NAME') ?: 'tour_dulich';
-$dbUser = getenv('DB_USER') ?: 'root';
-$dbPass = getenv('DB_PASS');
-$dbPort = getenv('DB_PORT') ?: '3306';
-
-if ($dbPass === false) {
-    $dbPass = '';
-}
+<<<<<<< HEAD
+$dbHost = '127.0.0.1';
+$dbName = 'tour_dulich';
+$dbUser = 'root';
+$dbPass = '';
+$dbPort = '3306';
 
 $dsn = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4";
 
@@ -21,10 +18,8 @@ $pdoOptions = [
 
 try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, $pdoOptions);
-} catch (PDOException $firstException) {
-    if ($dbUser === 'root' && $dbPass === '') {
-        $pdo = new PDO($dsn, $dbUser, 'root', $pdoOptions);
-    } else {
-        throw $firstException;
-    }
+} catch (PDOException $e) {
+    error_log('Database connection failed: ' . $e->getMessage());
+    http_response_code(500);
+    exit('Không thể kết nối đến database. Vui lòng thử lại sau.');
 }

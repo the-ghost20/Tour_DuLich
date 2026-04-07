@@ -1,3 +1,8 @@
+<?php
+declare(strict_types=1);
+
+$activePage = 'about';
+?>
 <!doctype html>
 <html lang="vi">
   <head>
@@ -12,36 +17,7 @@
   </head>
 
   <body>
-    <!-- NAVIGATION BAR -->
-    <nav class="navbar">
-      <div class="navbar-container">
-        <a href="index.html" class="navbar-logo">
-          <i class="fas fa-map-marker-alt"></i>
-          <span>Du lịch Việt</span>
-        </a>
-
-        <ul class="navbar-menu">
-          <li><a href="index.html" class="nav-link">TRANG CHỦ</a></li>
-          <li><a href="about.html" class="nav-link active">GIỚI THIỆU</a></li>
-          <li><a href="tours.html" class="nav-link">TOUR DU LỊCH</a></li>
-          <li><a href="pricing.html" class="nav-link">BẢNG GIÁ</a></li>
-          <li><a href="blog.html" class="nav-link">BLOG</a></li>
-          <li><a href="#contact" class="nav-link">LIÊN HỆ</a></li>
-        </ul>
-
-        <div class="navbar-right">
-          <div class="search-box" id="header-search">
-            <input type="text" placeholder="Tra cứu..." class="search-input" />
-            <i class="fas fa-search"></i>
-          </div>
-          <button class="btn-login">ĐĂNG NHẬP</button>
-        </div>
-
-        <div class="mobile-toggle">
-          <i class="fas fa-bars"></i>
-        </div>
-      </div>
-    </nav>
+    <?php require_once __DIR__ . '/includes/header.php'; ?>
 
     <!-- HERO SECTION -->
     <section class="hero-section about-hero">
@@ -139,59 +115,8 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-grid">
-          <div class="footer-col">
-            <h4>Du Lịch Việt</h4>
-            <p>
-              Chúng tôi cam kết mang đến những chuyến đi ý nghĩa và kỷ niệm khó
-              quên cho mọi gia đình Việt.
-            </p>
-            <div class="contact-info">
-              <p>
-                <i class="fas fa-map-marker-alt"></i> 123 Đường Lê Lợi, Quận 1,
-                TP.HCM
-              </p>
-              <p><i class="fas fa-phone"></i> (028) 1234 5678</p>
-              <p><i class="fas fa-envelope"></i> info@dulichviet.com</p>
-            </div>
-          </div>
-          <div class="footer-col">
-            <h4>DANH MỤC</h4>
-            <ul>
-              <li><a href="index.html">Trang chủ</a></li>
-              <li><a href="about.html">Giới thiệu</a></li>
-              <li><a href="tours.html">Tour trong nước</a></li>
-              <li><a href="tours.html">Tour quốc tế</a></li>
-            </ul>
-          </div>
-          <div class="footer-col">
-            <h4>HỖ TRỢ</h4>
-            <ul>
-              <li><a href="terms.html">Điều khoản sử dụng</a></li>
-              <li><a href="privacy.html">Chính sách bảo mật</a></li>
-              <li><a href="guide.html">Hướng dẫn đặt tour</a></li>
-              <li><a href="faq.html">FAQ</a></li>
-            </ul>
-          </div>
-          <div class="footer-col">
-            <h4>KẾT NỐI VỚI CHÚNG TÔI</h4>
-            <p>Đăng ký để nhận tin khuyến mãi mới nhất!</p>
-            <div class="social-links">
-              <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
-              <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
-              <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>&copy; 2026 Du lịch Việt. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-
+    <?php require_once __DIR__ . '/includes/footer.php'; ?>
     <script src="js/script.js"></script>
   </body>
 </html>
+

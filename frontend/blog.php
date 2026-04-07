@@ -1,3 +1,8 @@
+<?php
+declare(strict_types=1);
+
+$activePage = 'blog';
+?>
 <!doctype html>
 <html lang="vi">
   <head>
@@ -11,35 +16,7 @@
     />
   </head>
   <body class="blog-page">
-    <nav class="navbar">
-      <div class="navbar-container">
-        <a href="index.html" class="navbar-logo">
-          <i class="fas fa-map-marker-alt"></i>
-          <span>Du lịch Việt</span>
-        </a>
-
-        <ul class="navbar-menu">
-          <li><a href="index.html" class="nav-link">TRANG CHỦ</a></li>
-          <li><a href="about.html" class="nav-link">GIỚI THIỆU</a></li>
-          <li><a href="tours.html" class="nav-link">TOUR DU LỊCH</a></li>
-          <li><a href="pricing.html" class="nav-link">BẢNG GIÁ</a></li>
-          <li><a href="blog.html" class="nav-link active">BLOG</a></li>
-          <li><a href="index.html#contact" class="nav-link">LIÊN HỆ</a></li>
-        </ul>
-
-        <div class="navbar-right">
-          <div class="search-box">
-            <input type="text" placeholder="Tra cứu..." class="search-input" />
-            <i class="fas fa-search"></i>
-          </div>
-          <button class="btn-login">ĐĂNG NHẬP</button>
-        </div>
-
-        <div class="mobile-toggle">
-          <i class="fas fa-bars"></i>
-        </div>
-      </div>
-    </nav>
+    <?php require_once __DIR__ . '/includes/header.php'; ?>
 
     <section class="hero-section blog-hero">
       <div class="hero-overlay"></div>
@@ -102,7 +79,7 @@
                 Lịch trình thực tế, chi phí dự kiến, địa điểm check-in đẹp và gợi ý
                 ăn uống phù hợp cho nhóm bạn hoặc gia đình.
               </p>
-              <a href="tours.html" class="blog-cta-link"
+              <a href="tours.php" class="blog-cta-link"
                 >Xem ngay các tour Đà Lạt hấp dẫn <i class="fas fa-arrow-right"></i
               ></a>
             </div>
@@ -112,12 +89,12 @@
             <article class="blog-featured-mini">
               <span class="blog-tag">Tin tức & Khuyến mãi</span>
               <h3>Flash Sale tháng 4: Giảm đến 30% tour biển đảo</h3>
-              <a href="tours.html">Xem tour khuyến mãi</a>
+              <a href="tours.php">Xem tour khuyến mãi</a>
             </article>
             <article class="blog-featured-mini">
               <span class="blog-tag">Review & Đánh giá</span>
               <h3>Review homestay view đồi cực chill tại Mộc Châu</h3>
-              <a href="tours.html">Xem tour Mộc Châu</a>
+              <a href="tours.php">Xem tour Mộc Châu</a>
             </article>
           </div>
         </div>
@@ -144,7 +121,7 @@
                 <span><i class="far fa-calendar"></i> 05/04/2026</span>
                 <span><i class="far fa-user"></i> Admin Du Lịch Việt</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem ngay các tour Sapa</a>
+              <a class="blog-cta-btn" href="tours.php">Xem ngay các tour Sapa</a>
             </div>
           </article>
 
@@ -169,7 +146,7 @@
                 <span><i class="far fa-calendar"></i> 04/04/2026</span>
                 <span><i class="far fa-user"></i> Phương Linh</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Đà Nẵng - Hội An</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Đà Nẵng - Hội An</a>
             </div>
           </article>
 
@@ -194,7 +171,7 @@
                 <span><i class="far fa-calendar"></i> 03/04/2026</span>
                 <span><i class="far fa-user"></i> Thảo Nhi</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem ngay tour Phú Quốc</a>
+              <a class="blog-cta-btn" href="tours.php">Xem ngay tour Phú Quốc</a>
             </div>
           </article>
 
@@ -219,7 +196,7 @@
                 <span><i class="far fa-calendar"></i> 31/03/2026</span>
                 <span><i class="far fa-user"></i> Mỹ Duyên</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Nha Trang</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Nha Trang</a>
             </div>
           </article>
 
@@ -244,7 +221,7 @@
                 <span><i class="far fa-calendar"></i> 02/04/2026</span>
                 <span><i class="far fa-user"></i> Trọng Tín</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem ngay tour Hà Giang</a>
+              <a class="blog-cta-btn" href="tours.php">Xem ngay tour Hà Giang</a>
             </div>
           </article>
 
@@ -269,7 +246,7 @@
                 <span><i class="far fa-calendar"></i> 01/04/2026</span>
                 <span><i class="far fa-user"></i> Hải An</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Khám phá tour Huế ngay</a>
+              <a class="blog-cta-btn" href="tours.php">Khám phá tour Huế ngay</a>
             </div>
           </article>
 
@@ -294,7 +271,7 @@
                 <span><i class="far fa-calendar"></i> 27/03/2026</span>
                 <span><i class="far fa-user"></i> Hoàng Yến</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Hà Nội</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Hà Nội</a>
             </div>
           </article>
 
@@ -319,7 +296,7 @@
                 <span><i class="far fa-calendar"></i> 30/03/2026</span>
                 <span><i class="far fa-user"></i> Ban biên tập</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour đang ưu đãi</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour đang ưu đãi</a>
             </div>
           </article>
 
@@ -344,7 +321,7 @@
                 <span><i class="far fa-calendar"></i> 26/03/2026</span>
                 <span><i class="far fa-user"></i> CSKH Du Lịch Việt</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Săn tour Hà Giang giá tốt</a>
+              <a class="blog-cta-btn" href="tours.php">Săn tour Hà Giang giá tốt</a>
             </div>
           </article>
 
@@ -369,7 +346,7 @@
                 <span><i class="far fa-calendar"></i> 29/03/2026</span>
                 <span><i class="far fa-user"></i> Ban biên tập</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Đà Nẵng ưu đãi</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Đà Nẵng ưu đãi</a>
             </div>
           </article>
 
@@ -394,7 +371,7 @@
                 <span><i class="far fa-calendar"></i> 28/03/2026</span>
                 <span><i class="far fa-user"></i> Khách hàng thực tế</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Ninh Bình</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Ninh Bình</a>
             </div>
           </article>
 
@@ -419,7 +396,7 @@
                 <span><i class="far fa-calendar"></i> 23/03/2026</span>
                 <span><i class="far fa-user"></i> Khách hàng Trần Gia</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Đà Nẵng - Hội An</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Đà Nẵng - Hội An</a>
             </div>
           </article>
 
@@ -444,7 +421,7 @@
                 <span><i class="far fa-calendar"></i> 25/03/2026</span>
                 <span><i class="far fa-user"></i> Minh Khang</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour trekking</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour trekking</a>
             </div>
           </article>
 
@@ -469,7 +446,7 @@
                 <span><i class="far fa-calendar"></i> 24/03/2026</span>
                 <span><i class="far fa-user"></i> Thu Phương</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour miền Tây</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour miền Tây</a>
             </div>
           </article>
 
@@ -494,7 +471,7 @@
                 <span><i class="far fa-calendar"></i> 22/03/2026</span>
                 <span><i class="far fa-user"></i> Video khách hàng</span>
               </div>
-              <a class="blog-cta-btn" href="tours.html">Xem tour Nha Trang</a>
+              <a class="blog-cta-btn" href="tours.php">Xem tour Nha Trang</a>
             </div>
           </article>
         </div>
@@ -507,58 +484,7 @@
       </div>
     </section>
 
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-grid">
-          <div class="footer-col">
-            <h4>Du Lịch Việt</h4>
-            <p>
-              Chúng tôi cam kết mang đến những chuyến đi ý nghĩa và kỷ niệm khó quên
-              cho mọi gia đình Việt.
-            </p>
-            <div class="contact-info">
-              <p>
-                <i class="fas fa-map-marker-alt"></i> 123 Đường Lê Lợi, Quận 1,
-                TP.HCM
-              </p>
-              <p><i class="fas fa-phone"></i> (028) 1234 5678</p>
-              <p><i class="fas fa-envelope"></i> info@dulichviet.com</p>
-            </div>
-          </div>
-          <div class="footer-col">
-            <h4>DANH MỤC</h4>
-            <ul>
-              <li><a href="index.html">Trang chủ</a></li>
-              <li><a href="about.html">Giới thiệu</a></li>
-              <li><a href="tours.html">Tour trong nước</a></li>
-              <li><a href="tours.html">Tour quốc tế</a></li>
-            </ul>
-          </div>
-          <div class="footer-col">
-            <h4>HỖ TRỢ</h4>
-            <ul>
-              <li><a href="terms.html">Điều khoản sử dụng</a></li>
-              <li><a href="privacy.html">Chính sách bảo mật</a></li>
-              <li><a href="guide.html">Hướng dẫn đặt tour</a></li>
-              <li><a href="faq.html">FAQ</a></li>
-            </ul>
-          </div>
-          <div class="footer-col">
-            <h4>KẾT NỐI VỚI CHÚNG TÔI</h4>
-            <p>Đăng ký để nhận tin khuyến mãi mới nhất!</p>
-            <div class="social-links">
-              <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
-              <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
-              <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>&copy; 2026 Du lịch Việt. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-
+    <?php require_once __DIR__ . '/includes/footer.php'; ?>
     <script src="js/script.js"></script>
     <script>
       (function () {
@@ -680,3 +606,4 @@
     </script>
   </body>
 </html>
+
