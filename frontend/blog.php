@@ -1,6 +1,46 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../config/database.php';
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+$blogFeedbackFlash = null;
+$blogFeedbackErr = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'blog_feedback') {
+    $rating = (int) ($_POST['rating'] ?? 0);
+    $comment = trim((string) ($_POST['comment'] ?? ''));
+    $uid = !empty($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+
+    if ($rating < 1 || $rating > 5) {
+        $blogFeedbackErr = 'Vui lòng chọn số sao từ 1 đến 5.';
+    } elseif ($comment === '') {
+        $blogFeedbackErr = 'Vui lòng nhập bình luận.';
+    } else {
+        try {
+            $stmt = $pdo->prepare(
+                'INSERT INTO blog_feedback (user_id, rating, comment) VALUES (:uid, :r, :c)'
+            );
+            $stmt->execute([
+                'uid' => $uid,
+                'r' => $rating,
+                'c' => $comment,
+            ]);
+            header('Location: blog.php?thanks=1');
+            exit;
+        } catch (Throwable $e) {
+            $blogFeedbackErr = 'Chưa lưu được góp ý. Hãy cập nhật CSDL (bảng blog_feedback).';
+        }
+    }
+}
+
+if (isset($_GET['thanks'])) {
+    $blogFeedbackFlash = 'Cảm ơn bạn đã đánh giá và góp ý nội dung blog!';
+}
+
 $activePage = 'blog';
 ?>
 <!doctype html>
@@ -66,6 +106,13 @@ $activePage = 'blog';
           </ul>
         </div>
 
+        <?php if (!empty($blogFeedbackFlash)): ?>
+          <div class="blog-flash blog-flash--ok"><?= htmlspecialchars($blogFeedbackFlash, ENT_QUOTES, 'UTF-8') ?></div>
+        <?php endif; ?>
+        <?php if (!empty($blogFeedbackErr)): ?>
+          <div class="blog-flash blog-flash--err"><?= htmlspecialchars($blogFeedbackErr, ENT_QUOTES, 'UTF-8') ?></div>
+        <?php endif; ?>
+
         <div class="blog-featured">
           <article class="blog-featured-main">
             <img
@@ -78,6 +125,9 @@ $activePage = 'blog';
               <p>
                 Lịch trình thực tế, chi phí dự kiến, địa điểm check-in đẹp và gợi ý
                 ăn uống phù hợp cho nhóm bạn hoặc gia đình.
+              </p>
+              <p class="blog-read-row">
+                <a href="blog_post.php?slug=dalat-kinh-nghiem" class="blog-read-full">Đọc bài đầy đủ</a>
               </p>
               <a href="tours.php" class="blog-cta-link"
                 >Xem ngay các tour Đà Lạt hấp dẫn <i class="fas fa-arrow-right"></i
@@ -121,7 +171,8 @@ $activePage = 'blog';
                 <span><i class="far fa-calendar"></i> 05/04/2026</span>
                 <span><i class="far fa-user"></i> Admin Du Lịch Việt</span>
               </div>
-              <a class="blog-cta-btn" href="tours.php">Xem ngay các tour Sapa</a>
+              <a class="blog-cta-btn" href="blog_post.php?slug=sapa-mua-nao-dep">Đọc bài đầy đủ</a>
+              <a class="blog-cta-btn blog-cta-btn--secondary" href="tours.php">Xem tour Sapa</a>
             </div>
           </article>
 
@@ -171,7 +222,8 @@ $activePage = 'blog';
                 <span><i class="far fa-calendar"></i> 03/04/2026</span>
                 <span><i class="far fa-user"></i> Thảo Nhi</span>
               </div>
-              <a class="blog-cta-btn" href="tours.php">Xem ngay tour Phú Quốc</a>
+              <a class="blog-cta-btn" href="blog_post.php?slug=review-phu-quoc-resort">Đọc bài đầy đủ</a>
+              <a class="blog-cta-btn blog-cta-btn--secondary" href="tours.php">Xem tour Phú Quốc</a>
             </div>
           </article>
 
@@ -475,6 +527,24 @@ $activePage = 'blog';
             </div>
           </article>
         </div>
+
+        <section class="blog-interaction" aria-labelledby="blog-interaction-title">
+          <h2 id="blog-interaction-title"><i class="fas fa-star"></i> Đánh giá &amp; góp ý blog</h2>
+          <p>Chấm điểm 5 sao và để lại bình luận để chúng tôi cải thiện nội dung.</p>
+          <form method="post" class="blog-feedback-form">
+            <input type="hidden" name="form" value="blog_feedback" />
+            <fieldset class="star-rating-input">
+              <legend class="visually-hidden">Chọn từ 1 đến 5 sao</legend>
+              <?php for ($s = 5; $s >= 1; $s--): ?>
+                <input type="radio" name="rating" id="blog-fs-<?= $s ?>" value="<?= $s ?>" <?= $s === 5 ? 'checked' : '' ?> required />
+                <label for="blog-fs-<?= $s ?>" title="<?= $s ?> sao"><i class="fas fa-star"></i></label>
+              <?php endfor; ?>
+            </fieldset>
+            <label for="blog-feedback-comment">Bình luận của bạn</label>
+            <textarea id="blog-feedback-comment" name="comment" rows="4" required placeholder="Chia sẻ trải nghiệm đọc blog..."></textarea>
+            <button type="submit" class="profile-btn">Gửi đánh giá</button>
+          </form>
+        </section>
 
         <div id="blog-empty" class="blog-empty" hidden>
           <i class="fas fa-inbox"></i>

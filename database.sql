@@ -6,6 +6,8 @@
 SET NAMES utf8mb4;
 SET time_zone = '+07:00';
 
+DROP TABLE IF EXISTS tour_reviews;
+DROP TABLE IF EXISTS blog_feedback;
 DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS tours;
 DROP TABLE IF EXISTS users;
@@ -71,6 +73,45 @@ CREATE INDEX idx_bookings_tour_id ON bookings(tour_id);
 CREATE INDEX idx_tours_destination ON tours(destination);
 CREATE INDEX idx_tours_status ON tours(status);
 
+CREATE TABLE tour_reviews (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tour_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    rating TINYINT UNSIGNED NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tour_reviews_tour
+        FOREIGN KEY (tour_id) REFERENCES tours(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_tour_reviews_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT chk_tour_reviews_rating CHECK (rating >= 1 AND rating <= 5),
+    CONSTRAINT uk_tour_reviews_user_tour UNIQUE (tour_id, user_id)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_tour_reviews_tour_id ON tour_reviews(tour_id);
+
+CREATE TABLE blog_feedback (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NULL,
+    rating TINYINT UNSIGNED NOT NULL,
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_blog_feedback_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+    CONSTRAINT chk_blog_feedback_rating CHECK (rating >= 1 AND rating <= 5)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
 -- ==========================================================
 -- Du lieu mau (mock data) tieng Viet
 -- ==========================================================
@@ -92,3 +133,7 @@ INSERT INTO bookings (user_id, tour_id, adults, children, total_amount, status) 
 (3, 2, 2, 0, 8580000.00, 'đã xác nhận'),
 (4, 3, 1, 1, 8990000.00, 'chờ duyệt'),
 (2, 4, 2, 0, 5780000.00, 'đã hủy');
+
+INSERT INTO tour_reviews (tour_id, user_id, rating, comment) VALUES
+(1, 2, 5, 'Lịch trình hợp lý, xe và HDV chu đáo. Gia đình mình rất hài lòng!'),
+(2, 3, 4, 'Cảnh đẹp, giá hơi cao nhưng xứng đáng.');

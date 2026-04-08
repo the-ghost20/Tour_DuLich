@@ -30,6 +30,14 @@ let currentFilters = {
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 const API_BASE_URL = "http://localhost:4000/api";
 
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 // ========== Initialize ==========
 document.addEventListener("DOMContentLoaded", () => {
   bootstrapDataFromBackend();
@@ -38,6 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPriceSlider();
   loadAboutStats();
   setupLoginModal();
+  _bkSetupModalEvents();
+  initToursUrlSearch();
+  initWishlistPage();
 });
 
 async function bootstrapDataFromBackend() {
@@ -111,9 +122,9 @@ function setupLoginModal() {
   const messageBox = modal.querySelector("#auth-modal-message");
   const forgotForm = modal.querySelector("#auth-forgot-form");
 
-  const loginTitle = "Chào mừng quay lại";
+  const loginTitle = "Đăng nhập";
   const loginSubtitle =
-    "Đăng nhập để đặt tour nhanh hơn và theo dõi lịch sử chuyến đi.";
+    "Chào mừng bạn quay trở lại!";
   const forgotTitle = "Đặt lại mật khẩu";
   const forgotSubtitle =
     "Nhập email hoặc số điện thoại đã đăng ký để đặt mật khẩu mới.";
@@ -652,16 +663,73 @@ function handleSort(e) {
 }
 
 // ========== Wishlist Functions ==========
+function initToursUrlSearch() {
+  if (!searchField) return;
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("search");
+  if (q) {
+    searchField.value = q;
+    currentFilters.searchQuery = q;
+    filterTours();
+  }
+}
+
+function initWishlistPage() {
+  const root = document.getElementById("wishlist-page-root");
+  const box = document.getElementById("wishlist-page-list");
+  if (!root || !box) return;
+
+  function render() {
+    const list = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    if (list.length === 0) {
+      box.innerHTML =
+        '<p class="wishlist-empty">Bạn chưa lưu tour nào. <a href="tours.php">Khám phá danh sách tour</a></p>';
+      return;
+    }
+    box.innerHTML = list
+      .map(
+        (item) => `
+      <div class="wishlist-page-item" data-wl-id="${escapeHtml(String(item.id))}">
+        <div class="wishlist-page-item__main">
+          <a href="tour_detail.php?id=${encodeURIComponent(String(item.id))}">${escapeHtml(item.name)}</a>
+        </div>
+        <button type="button" class="wishlist-remove-btn" data-wl-remove="${escapeHtml(String(item.id))}" aria-label="Xóa khỏi yêu thích">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>`,
+      )
+      .join("");
+
+    box.querySelectorAll("[data-wl-remove]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const id = b.getAttribute("data-wl-remove");
+        wishlist = wishlist.filter((x) => String(x.id) !== String(id));
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+        loadWishlistUI();
+        render();
+        showNotification("Đã xóa khỏi danh sách yêu thích", "info");
+      });
+    });
+  }
+
+  render();
+}
+
 function toggleWishlist(e) {
   e.preventDefault();
   const btn = e.currentTarget;
   const tourCard = btn.closest(".tour-card");
-  const tourId =
-    tourCard.getAttribute("data-tour-id") ||
-    tourCard.querySelector("h3").textContent;
-  const tourName = tourCard.querySelector("h3").textContent;
+  const tourIdRaw =
+    btn.dataset.tourId ||
+    tourCard?.getAttribute("data-tour-id") ||
+    tourCard?.querySelector("h3")?.textContent;
+  const tourId = tourIdRaw != null ? String(tourIdRaw) : "";
+  const tourName =
+    btn.dataset.tourName ||
+    tourCard?.querySelector("h3")?.textContent.trim() ||
+    "Tour";
 
-  const index = wishlist.findIndex((item) => item.id === tourId);
+  const index = wishlist.findIndex((item) => String(item.id) === String(tourId));
 
   if (index > -1) {
     // Remove from wishlist
@@ -684,12 +752,14 @@ function loadWishlistUI() {
   // Update buttons
   wishlistBtns.forEach((btn) => {
     const tourCard = btn.closest(".tour-card");
-    const tourId =
-      tourCard.getAttribute("data-tour-id") ||
-      tourCard.querySelector("h3").textContent;
+    const tourIdRaw =
+      btn.dataset.tourId ||
+      tourCard?.getAttribute("data-tour-id") ||
+      tourCard?.querySelector("h3")?.textContent;
+    const tourId = tourIdRaw != null ? String(tourIdRaw) : "";
     btn.classList.toggle(
       "added",
-      wishlist.some((item) => item.id === tourId),
+      wishlist.some((item) => String(item.id) === String(tourId)),
     );
   });
 
@@ -703,7 +773,7 @@ function loadWishlistUI() {
         .map(
           (item) => `
         <div class="wishlist-item">
-          <p>${item.name}</p>
+          <a href="tour_detail.php?id=${encodeURIComponent(String(item.id))}">${escapeHtml(item.name)}</a>
         </div>
       `,
         )
@@ -712,62 +782,202 @@ function loadWishlistUI() {
   }
 }
 
+// ========== Booking Modal System ==========
+
+let _bkTourId = null;
+let _bkTourPrice = 0;
+
+function openBookingModal(tourId, tourName, tourPrice) {
+  _bkTourId = tourId;
+  _bkTourPrice = Number(tourPrice) || 0;
+
+  const modal = document.getElementById("booking-modal");
+  if (!modal) return;
+
+  // Reset state
+  document.getElementById("bk-tour-id").value = tourId;
+  document.getElementById("bk-tour-name-display").textContent = tourName;
+  document.getElementById("bk-price-per").textContent =
+    _bkTourPrice.toLocaleString("vi-VN") + " đ";
+  document.getElementById("bk-adults").value = 1;
+  document.getElementById("bk-children").value = 0;
+  document.getElementById("bk-form").style.display = "";
+  document.getElementById("bk-success").style.display = "none";
+
+  const msgEl = document.getElementById("bk-msg");
+  msgEl.style.display = "none";
+  msgEl.textContent = "";
+
+  const submitBtn = document.getElementById("bk-submit-btn");
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Xác nhận đặt tour';
+
+  _bkUpdateTotal();
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeBookingModal() {
+  const modal = document.getElementById("booking-modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function openLoginRequiredModal() {
+  const modal = document.getElementById("login-required-modal");
+  if (modal) {
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeLoginRequiredModal() {
+  const modal = document.getElementById("login-required-modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function _bkUpdateTotal() {
+  const adults = parseInt(document.getElementById("bk-adults")?.value || 1);
+  const children = parseInt(document.getElementById("bk-children")?.value || 0);
+  const total = _bkTourPrice * (adults + children * 0.5);
+  const el = document.getElementById("bk-total-display");
+  if (el) el.textContent = total.toLocaleString("vi-VN") + " đ";
+}
+
+function _bkSetupModalEvents() {
+  // Counter buttons
+  document.querySelectorAll(".bk-cnt-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.target;
+      const delta = parseInt(btn.dataset.delta);
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const min = parseInt(input.min) || 0;
+      const max = parseInt(input.max) || 99;
+      const newVal = Math.min(max, Math.max(min, parseInt(input.value) + delta));
+      input.value = newVal;
+      _bkUpdateTotal();
+    });
+  });
+
+  // Close booking modal
+  const closeBtn = document.getElementById("bk-close-btn");
+  const cancelBtn = document.getElementById("bk-cancel-btn");
+  const successClose = document.getElementById("bk-success-close");
+
+  if (closeBtn) closeBtn.addEventListener("click", closeBookingModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeBookingModal);
+  if (successClose) successClose.addEventListener("click", closeBookingModal);
+
+  // Close on backdrop click
+  const bookingModal = document.getElementById("booking-modal");
+  if (bookingModal) {
+    bookingModal.addEventListener("click", (e) => {
+      if (e.target === bookingModal) closeBookingModal();
+    });
+  }
+
+  // Close login required modal
+  const lrClose = document.getElementById("lr-close-btn");
+  if (lrClose) lrClose.addEventListener("click", closeLoginRequiredModal);
+
+  const loginRequiredModal = document.getElementById("login-required-modal");
+  if (loginRequiredModal) {
+    loginRequiredModal.addEventListener("click", (e) => {
+      if (e.target === loginRequiredModal) closeLoginRequiredModal();
+    });
+  }
+
+  // Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeBookingModal();
+      closeLoginRequiredModal();
+    }
+  });
+
+  // Submit form
+  const form = document.getElementById("bk-form");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById("bk-submit-btn");
+      const msgEl = document.getElementById("bk-msg");
+      const adults = parseInt(document.getElementById("bk-adults").value) || 1;
+      const children = parseInt(document.getElementById("bk-children").value) || 0;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+      msgEl.style.display = "none";
+
+      try {
+        const formData = new FormData();
+        formData.append("tour_id", _bkTourId);
+        formData.append("adults", adults);
+        formData.append("children", children);
+
+        const res = await fetch("book_tour.php", {
+          method: "POST",
+          body: formData,
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          // Show success state
+          document.getElementById("bk-form").style.display = "none";
+          document.getElementById("bk-success-msg").textContent = json.message;
+          document.getElementById("bk-success").style.display = "";
+        } else {
+          msgEl.textContent = json.message || "Đặt tour thất bại. Vui lòng thử lại.";
+          msgEl.className = "bk-msg is-error";
+          msgEl.style.display = "";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Xác nhận đặt tour';
+        }
+      } catch (_err) {
+        msgEl.textContent = "Lỗi kết nối. Vui lòng thử lại.";
+        msgEl.className = "bk-msg is-error";
+        msgEl.style.display = "";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Xác nhận đặt tour';
+      }
+    });
+  }
+}
+
 // ========== Booking Functions ==========
 function handleBooking(e) {
   e.preventDefault();
   const btn = e.currentTarget;
   const tourCard = btn.closest(".tour-card");
-  const tourName = tourCard.querySelector("h3").textContent;
+  const tourName = tourCard.querySelector("h3").textContent.trim();
+
+  // Đọc data từ button (được gán từ PHP) hoặc từ card attribute
   const tourId =
-    tourCard.getAttribute("data-tour-id") || `tour-${tourName.toLowerCase()}`;
+    btn.dataset.tourId ||
+    tourCard.dataset.tourId ||
+    tourCard.getAttribute("data-tour-id") ||
+    "";
+  const tourPrice =
+    btn.dataset.tourPrice ||
+    parseFloat(
+      tourCard.querySelector(".tour-price")?.textContent?.replace(/\D/g, "") || "0"
+    );
 
-  // Check if logged in
-  // Tạm thời bỏ luồng login bằng API, chỉ nhắc người dùng đăng nhập qua trang login.php
-  const isLoggedIn = localStorage.getItem("userToken");
+  // Kiểm tra trạng thái đăng nhập từ PHP session (truyền qua biến JS toàn cục)
+  const isLoggedIn =
+    typeof window.__PHP_IS_LOGGED_IN__ !== "undefined"
+      ? window.__PHP_IS_LOGGED_IN__
+      : false;
+
   if (!isLoggedIn) {
-    showNotification("Vui lòng đăng nhập tại trang đăng nhập để đặt tour!", "warning");
-    window.location.href = "login.php";
+    openLoginRequiredModal();
     return;
   }
 
-  const fullName =
-    localStorage.getItem("userFullName") ||
-    prompt("Nhập họ tên để hoàn tất đặt tour:");
-  const phone = prompt("Nhập số điện thoại liên hệ:");
-
-  if (!fullName || !phone) {
-    showNotification("Bạn cần nhập đủ họ tên và số điện thoại", "warning");
-    return;
-  }
-
-  fetch(`${API_BASE_URL}/bookings`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${isLoggedIn}`,
-    },
-    body: JSON.stringify({
-      tourId,
-      tourName,
-      fullName,
-      phone,
-      email: localStorage.getItem("userEmail") || "",
-      guests: 1,
-    }),
-  })
-    .then(async (response) => {
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Không thể đặt tour");
-      }
-      showNotification(`Đặt tour thành công: ${tourName}`, "success");
-    })
-    .catch((error) => {
-      showNotification(error.message || "Lỗi kết nối backend", "error");
-    });
+  openBookingModal(tourId, tourName, tourPrice);
 }
-
-// Hàm handleLogin cũ không còn dùng tới (đã chuyển sang login.php)
 
 // ========== Notification System ==========
 function showNotification(message, type = "info") {

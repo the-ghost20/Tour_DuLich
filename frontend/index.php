@@ -106,7 +106,7 @@ try {
                   <div class="tour-price">
                     <span class="price"><?= $priceText ?></span>
                   </div>
-                  <a href="tours.php" class="btn-detail">Xem tour</a>
+                  <a href="tour_detail.php?id=<?= (int) $tour['id'] ?>" class="btn-detail">Chi tiết tour</a>
                 </div>
               </div>
             <?php endforeach; ?>

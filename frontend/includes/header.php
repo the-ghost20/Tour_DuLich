@@ -29,6 +29,7 @@ $currentUserName = isset($_SESSION['full_name']) ? (string) $_SESSION['full_name
       <li><a href="tours.php" class="nav-link <?= $activePage === 'tours' ? 'active' : '' ?>">TOUR DU LỊCH</a></li>
       <li><a href="pricing.php" class="nav-link <?= $activePage === 'pricing' ? 'active' : '' ?>">BẢNG GIÁ</a></li>
       <li><a href="blog.php" class="nav-link <?= $activePage === 'blog' ? 'active' : '' ?>">BLOG</a></li>
+      <li><a href="wishlist.php" class="nav-link <?= $activePage === 'wishlist' ? 'active' : '' ?>">YÊU THÍCH</a></li>
       <li><a href="#contact" class="nav-link">LIÊN HỆ</a></li>
     </ul>
 
@@ -47,7 +48,6 @@ $currentUserName = isset($_SESSION['full_name']) ? (string) $_SESSION['full_name
           >
             ĐĂNG NHẬP
           </a>
-          <a class="btn-login btn-register" href="register.php">ĐĂNG KÝ</a>
         </div>
       <?php else: ?>
         <div class="user-menu">
@@ -56,6 +56,8 @@ $currentUserName = isset($_SESSION['full_name']) ? (string) $_SESSION['full_name
             <i class="fas fa-chevron-down"></i>
           </button>
           <div class="user-menu-dropdown">
+            <a href="profile.php"><i class="fas fa-id-card"></i> Hồ sơ cá nhân</a>
+            <a href="wishlist.php"><i class="fas fa-heart"></i> Tour yêu thích</a>
             <a href="my_bookings.php"><i class="fas fa-receipt"></i> Lịch sử đặt tour</a>
             <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
           </div>

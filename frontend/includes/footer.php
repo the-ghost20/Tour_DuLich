@@ -70,32 +70,40 @@
       >
         <i class="fas fa-times"></i>
       </button>
-      <h1 class="auth-title" id="login-modal-title">Chào mừng quay lại</h1>
-      <p class="auth-subtitle" id="login-modal-subtitle">Đăng nhập để đặt tour nhanh hơn và theo dõi lịch sử chuyến đi.</p>
+      <div class="auth-header-center">
+        <div class="auth-header-icon">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <h1 class="auth-title" id="login-modal-title">Đăng nhập</h1>
+        <p class="auth-subtitle" id="login-modal-subtitle">Chào mừng bạn quay trở lại!</p>
+      </div>
 
       <div class="auth-message" id="auth-modal-message" aria-live="polite"></div>
 
       <form method="post" action="login.php" id="auth-login-form" data-auth-tab="login">
         <div class="auth-field">
-          <label for="login-modal-email">Email</label>
-          <input id="login-modal-email" name="email" type="email" placeholder="you@email.com" required />
+          <label for="login-modal-email"><i class="fas fa-envelope" style="color: #00acc1; margin-right: 4px;"></i> Email</label>
+          <input id="login-modal-email" name="email" type="email" placeholder="Nhập email của bạn" required />
         </div>
         <div class="auth-field">
-          <label for="login-modal-password">Mật khẩu</label>
-          <input id="login-modal-password" name="password" type="password" minlength="8" placeholder="Tối thiểu 8 ký tự" required />
-          <small class="auth-hint">Mật khẩu tối thiểu 8 ký tự.</small>
+          <label for="login-modal-password"><i class="fas fa-lock" style="color: #00acc1; margin-right: 4px;"></i> Mật khẩu</label>
+          <input id="login-modal-password" name="password" type="password" minlength="8" placeholder="Nhập mật khẩu" required />
         </div>
+        
+        <div class="auth-forgot-row">
+          <a href="#" class="auth-link auth-forgot-link" id="auth-forgot-link" data-auth-tab-trigger="forgot">Quên mật khẩu?</a>
+        </div>
+
         <div class="auth-actions auth-actions--stack">
           <button class="auth-btn auth-btn--block" type="submit">Đăng nhập</button>
+          
           <div class="auth-footer-links">
             <p class="auth-footer-line">
               Chưa có tài khoản?
-              <a class="auth-link" href="register.php">Đăng ký</a>
-            </p>
-            <p class="auth-footer-line">
-              <a href="#" class="auth-link" id="auth-forgot-link" data-auth-tab-trigger="forgot">Quên mật khẩu?</a>
+              <a class="auth-link" href="register.php">Đăng ký ngay</a>
             </p>
           </div>
+          
         </div>
       </form>
 
@@ -130,7 +138,6 @@
             name="new_password"
             type="password"
             minlength="8"
-            placeholder="Tối thiểu 8 ký tự"
             required
           />
         </div>

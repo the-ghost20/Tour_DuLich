@@ -1,0 +1,79 @@
+<?php
+declare(strict_types=1);
+
+$slug = isset($_GET['slug']) ? trim((string) $_GET['slug']) : '';
+$articles = require __DIR__ . '/includes/blog_articles.php';
+
+if ($slug === '' || !isset($articles[$slug])) {
+    http_response_code(404);
+    ?>
+    <!doctype html>
+    <html lang="vi">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Không tìm thấy bài viết - Du Lịch Việt</title>
+        <link rel="stylesheet" href="css/styles.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+      </head>
+      <body>
+        <?php $activePage = 'blog'; require __DIR__ . '/includes/header.php'; ?>
+        <section class="blog-post-missing">
+          <div class="container">
+            <h1>Bài viết chưa có bản đầy đủ</h1>
+            <p>Slug không khớp hoặc nội dung đang được biên tập.</p>
+            <a href="blog.php" class="profile-btn">← Quay lại blog</a>
+          </div>
+        </section>
+        <?php require __DIR__ . '/includes/footer.php'; ?>
+      </body>
+    </html>
+    <?php
+    exit;
+}
+
+$post = $articles[$slug];
+$title = htmlspecialchars((string) $post['title'], ENT_QUOTES, 'UTF-8');
+$tag = htmlspecialchars((string) $post['tag'], ENT_QUOTES, 'UTF-8');
+$date = htmlspecialchars((string) $post['date'], ENT_QUOTES, 'UTF-8');
+$author = htmlspecialchars((string) $post['author'], ENT_QUOTES, 'UTF-8');
+$image = htmlspecialchars((string) $post['image'], ENT_QUOTES, 'UTF-8');
+?>
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><?= $title ?> - Blog Du Lịch Việt</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+  <body class="blog-page">
+    <?php $activePage = 'blog'; require __DIR__ . '/includes/header.php'; ?>
+
+    <article class="blog-post-read">
+      <header class="blog-post-read__hero" style="background-image: url('<?= $image ?>');">
+        <div class="blog-post-read__overlay"></div>
+        <div class="container blog-post-read__hero-inner">
+          <span class="blog-tag"><?= $tag ?></span>
+          <h1><?= $title ?></h1>
+          <div class="blog-post-read__meta">
+            <span><i class="far fa-calendar"></i> <?= $date ?></span>
+            <span><i class="far fa-user"></i> <?= $author ?></span>
+          </div>
+        </div>
+      </header>
+      <div class="container blog-post-read__body">
+        <div class="blog-post-read__content">
+          <?= $post['body'] ?>
+        </div>
+        <p class="blog-post-read__back">
+          <a href="blog.php"><i class="fas fa-arrow-left"></i> Quay lại danh sách blog</a>
+        </p>
+      </div>
+    </article>
+
+    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <script src="js/script.js"></script>
+  </body>
+</html>

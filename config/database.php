@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-<<<<<<< HEAD
 $dbHost = '127.0.0.1';
 $dbName = 'tour_dulich';
 $dbUser = 'root';

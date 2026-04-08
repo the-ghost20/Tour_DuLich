@@ -90,25 +90,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       .auth-page .auth-field label { font-weight: 600; color: #1f2c44; }
       .auth-page .auth-field input,
       .auth-page .auth-field select {
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid rgba(31, 44, 68, 0.16);
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 2px solid transparent;
+        background: #f3f6f9;
         outline: none;
-        background: #fff;
+        transition: all 0.25s ease;
+        color: #1a2942;
+        font-size: 0.95rem;
       }
       .auth-page .auth-field input:focus,
       .auth-page .auth-field select:focus {
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(33, 150, 243, .14);
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+        transform: translateY(-2px);
       }
       .auth-page .auth-phone-group {
         display: grid;
         grid-template-columns: 170px 1fr;
         gap: 10px;
       }
-      .auth-page .auth-actions { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top: 16px; flex-wrap: wrap; }
-      .auth-page .auth-btn { display:inline-block; border:none; border-radius: 12px; padding: 12px 18px; cursor:pointer; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color:#fff; font-weight: 700; box-shadow: 0 12px 22px rgba(33, 150, 243, .24); }
-      .auth-page .auth-link { color: var(--primary-color); font-weight: 600; }
+      .auth-page .auth-actions { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+      .auth-page .auth-btn { width: 100%; border:none; border-radius: 10px; padding: 12px 18px; cursor:pointer; background: #00acc1; color:#fff; font-weight: 700; font-size: 0.95rem; transition: transform 0.2s; }
+      .auth-page .auth-btn:hover { background: #0097a7; transform: translateY(-1px); }
+      .auth-page .auth-link { color: #00acc1; font-weight: 600; }
       .auth-page .auth-alert { background:#fff3cd; border:1px solid #ffe69c; color:#664d03; padding: 12px 14px; border-radius: 12px; margin-bottom: 14px; }
       .auth-page .auth-alert--error { background:#f8d7da; border-color:#f1aeb5; color:#842029; }
       .auth-page .auth-errors { margin:0; padding-left:18px; }
@@ -121,8 +127,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ?>
     <div class="container auth-page">
       <div class="auth-container">
-        <h1 class="auth-title">Đăng ký</h1>
-        <p class="auth-subtitle">Tạo tài khoản để đặt tour nhanh và quản lý hành trình của bạn.</p>
+        <div class="auth-header-center">
+          <div class="auth-header-icon" style="font-size: 54px; color: #00acc1; margin-bottom: 8px;">
+            <i class="fas fa-user-plus" style="background: #e0f7fa; border-radius: 50%; padding: 12px; box-shadow: 0 4px 10px rgba(0,172,193,0.2);"></i>
+          </div>
+          <h1 class="auth-title" style="text-align: center; font-size: 1.8rem; color: #333; margin-top: 16px;">Đăng ký</h1>
+          <p class="auth-subtitle" style="text-align: center; color: #666; font-size: 0.9rem;">Tạo tài khoản để đặt tour nhanh và quản lý hành trình của bạn.</p>
+        </div>
 
         <?php if (!empty($errors)): ?>
           <div class="auth-alert auth-alert--error">
@@ -136,15 +147,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="post" action="">
           <div class="auth-field">
-            <label for="full_name">Họ tên</label>
-            <input id="full_name" name="full_name" type="text" value="<?= htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') ?>" required />
+            <label for="full_name"><i class="fas fa-user" style="color: #00acc1; margin-right: 4px;"></i> Họ tên</label>
+            <input id="full_name" name="full_name" type="text" value="<?= htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') ?>" placeholder="Nhập họ tên của bạn" required />
           </div>
           <div class="auth-field">
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>" required />
+            <label for="email"><i class="fas fa-envelope" style="color: #00acc1; margin-right: 4px;"></i> Email</label>
+            <input id="email" name="email" type="email" value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>" placeholder="Nhập email của bạn" required />
           </div>
           <div class="auth-field">
-            <label for="phone">Số điện thoại</label>
+            <label for="phone"><i class="fas fa-phone" style="color: #00acc1; margin-right: 4px;"></i> Số điện thoại</label>
             <div class="auth-phone-group">
               <select id="phone_code" name="phone_code" aria-label="Mã quốc gia">
                 <option value="+84" selected>Việt Nam (+84)</option>
@@ -157,16 +168,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </div>
           <div class="auth-field">
-            <label for="password">Mật khẩu</label>
-            <input id="password" name="password" type="password" minlength="8" required />
-            <small style="color: var(--text-light);">Tối thiểu 8 ký tự</small>
+            <label for="password"><i class="fas fa-lock" style="color: #00acc1; margin-right: 4px;"></i> Mật khẩu</label>
+            <input id="password" name="password" type="password" minlength="8" placeholder="Tạo mật khẩu" required />
           </div>
 
           <div class="auth-actions">
             <button class="auth-btn" type="submit">Tạo tài khoản</button>
-            <div>
+            <div style="text-align: center; color: #576680; font-size: 0.92rem; margin-top: 4px;">
               Đã có tài khoản?
-              <a class="auth-link" href="login.php">Đăng nhập</a>
+              <a class="auth-link" href="login.php">Đăng nhập ngay</a>
             </div>
           </div>
         </form>

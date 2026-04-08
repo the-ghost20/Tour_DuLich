@@ -3,6 +3,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+$_isLoggedIn = !empty($_SESSION['user_id']);
+$_jsIsLoggedIn = $_isLoggedIn ? 'true' : 'false';
+
 $tours = [];
 
 try {
@@ -285,7 +292,7 @@ function durationFilterTag(string $duration): string
                   </div>
                 </div>
                 <div class="tour-card-content">
-                  <h3><?= $tourName ?></h3>
+                  <h3><a href="tour_detail.php?id=<?= $tourId ?>" class="tour-title-link"><?= $tourName ?></a></h3>
                   <div class="tour-meta">
                     <span class="tour-duration"><i class="fas fa-calendar"></i> <?= $duration ?></span>
                     <span class="tour-destination"><i class="fas fa-map-marker-alt"></i> <?= $destination ?></span>
@@ -302,7 +309,13 @@ function durationFilterTag(string $duration): string
                   </div>
                   <div class="tour-card-footer">
                     <span class="tour-price"><?= $priceText ?></span>
-                    <button class="btn-book">Đặt Ngay</button>
+                    <div class="tour-card-footer-btns">
+                      <a href="tour_detail.php?id=<?= $tourId ?>" class="btn-tour-detail">Chi tiết</a>
+                      <button class="btn-book" type="button"
+                        data-tour-id="<?= $tourId ?>"
+                        data-tour-name="<?= $tourName ?>"
+                        data-tour-price="<?= (float) $tour['price'] ?>">Đặt Ngay</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -327,8 +340,14 @@ function durationFilterTag(string $duration): string
       </main>
     </div>
 
+    <?php require __DIR__ . '/includes/booking_modal.php'; ?>
+
     <?php require __DIR__ . '/includes/footer.php'; ?>
 
+    <script>
+      // Truyền trạng thái đăng nhập từ PHP session xuống JS
+      window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
+    </script>
     <script src="js/script.js"></script>
   </body>
 </html>

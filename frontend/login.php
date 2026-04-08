@@ -77,16 +77,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       .auth-page .auth-subtitle { margin: 0 0 20px; color: #64748b; }
       .auth-page .auth-field { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
       .auth-page .auth-field label { font-weight: 600; color: #1f2c44; }
-      .auth-page .auth-field input {
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid rgba(31, 44, 68, 0.16);
+      .auth-page .auth-field input,
+      .auth-page .auth-field select {
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 2px solid transparent;
+        background: #f3f6f9;
         outline: none;
-        background: #fff;
+        transition: all 0.25s ease;
+        color: #1a2942;
+        font-size: 0.95rem;
       }
-      .auth-page .auth-field input:focus {
+      .auth-page .auth-field input:focus,
+      .auth-page .auth-field select:focus {
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(33, 150, 243, .14);
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+        transform: translateY(-2px);
       }
       .auth-page .auth-actions { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top: 16px; flex-wrap: wrap; }
       .auth-page .auth-btn { display:inline-block; border:none; border-radius: 12px; padding: 12px 18px; cursor:pointer; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color:#fff; font-weight: 700; box-shadow: 0 12px 22px rgba(33, 150, 243, .24); }
