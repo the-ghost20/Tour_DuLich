@@ -50,24 +50,20 @@ CREATE TABLE bookings (
     adults INT UNSIGNED NOT NULL DEFAULT 1,
     children INT UNSIGNED NOT NULL DEFAULT 0,
     total_amount DECIMAL(15,2) NOT NULL,
-    status ENUM('chờ duyệt', 'đã xác nhận', 'đã hủy') NOT NULL DEFAULT 'chờ duyệt',
+    cancel_reason TEXT NULL,
+    status ENUM('chờ duyệt', 'đã xác nhận', 'đã thanh toán', 'yêu cầu hủy', 'đã hủy') NOT NULL DEFAULT 'chờ duyệt',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_bookings_user
         FOREIGN KEY (user_id) REFERENCES users(id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_bookings_tour
         FOREIGN KEY (tour_id) REFERENCES tours(id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT chk_bookings_adults_min CHECK (adults >= 1),
     CONSTRAINT chk_bookings_children_non_negative CHECK (children >= 0),
     CONSTRAINT chk_bookings_total_non_negative CHECK (total_amount >= 0)
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX idx_bookings_tour_id ON bookings(tour_id);
 CREATE INDEX idx_tours_destination ON tours(destination);
