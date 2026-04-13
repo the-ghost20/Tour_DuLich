@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 if (empty($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
 
@@ -108,7 +108,7 @@ function statusMeta(string $status): array {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quản lý đặt tour - Du Lịch Việt</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
       /* ── Page layout ── */
@@ -432,7 +432,7 @@ function statusMeta(string $status): array {
   <body>
     <?php
       $activePage = '';
-      require __DIR__ . '/includes/header.php';
+      require __DIR__ . '/../includes/header.php';
     ?>
 
     <div class="container mb-page">
@@ -598,9 +598,9 @@ function statusMeta(string $status): array {
       </div>
     </div>
 
-    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <?php require __DIR__ . '/../includes/footer.php'; ?>
 
-    <script src="js/script.js"></script>
+    <script src="../assets/js/main.js"></script>
     <script>
       function openCancelModal(bookingId) {
         document.getElementById('cancelBookingId').value = bookingId;

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 $hotTours = [];
 
@@ -25,7 +25,7 @@ try {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Du Lịch Việt - Đặt Tour Du Lịch Online</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -35,7 +35,7 @@ try {
   <body>
     <?php
       $activePage = 'home';
-      require __DIR__ . '/includes/header.php';
+      require __DIR__ . '/../includes/header.php';
     ?>
 
     <!-- HERO SECTION WITH SEARCH -->
@@ -143,7 +143,7 @@ try {
       </div>
     </section>
 
-    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <?php require __DIR__ . '/../includes/footer.php'; ?>
   </body>
 </html>
 

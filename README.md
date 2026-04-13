@@ -1,92 +1,121 @@
-# Tour_DuLich - Website Đặt Tour
+# Tour_DuLich — Website đặt tour du lịch
 
-Dự án website đặt tour du lịch với mô hình kết hợp:
-- **Frontend + giao diện quản trị:** PHP (chạy trên XAMPP)
-- **Database:** MySQL
-- **Backend API (cho một số chức năng frontend):** Node.js/Express (nếu sử dụng)
+Ứng dụng web PHP + MySQL: khách xem tour, đặt tour, đánh giá; quản trị viên / nhân viên xử lý đơn và nội dung. Giao diện tĩnh kết hợp PHP server-side, không bắt buộc framework.
 
-## Công nghệ sử dụng
+## Công nghệ
 
-- PHP, HTML, CSS, JavaScript
-- MySQL (import từ `database.sql`)
-- XAMPP (Apache + MySQL)
-- Node.js (cho API tại `http://localhost:4000/api` nếu bạn bật backend)
+- **PHP** (phiên bản có hỗ trợ `password_hash`, PDO MySQL)
+- **MySQL** 8.x hoặc MariaDB 10.5+
+- **HTML / CSS / JavaScript** (tài nguyên trong `assets/`)
+- **Apache** (khuyến nghị XAMPP, WAMP, hoặc Laravel Valet / built-in PHP server khi cấu hình đúng document root)
 
-## Cấu trúc dự án 
+## Cấu trúc thư mục (tóm tắt)
 
 ```text
 Tour_DuLich/
 ├── README.md
-├── database.sql
 ├── config/
-│   └── database.php
-├── admin/
-│   └── tours.php
-└── frontend/
-    ├── index.php
-    ├── tours.php
-    ├── pricing.php
-    ├── about.php
-    ├── blog.php
-    ├── faq.php
-    ├── guide.php
-    ├── privacy.php
-    ├── terms.php
-    ├── login.php
-    ├── register.php
-    ├── logout.php
-    ├── css/
-    │   └── styles.css
-    ├── js/
-    │   └── script.js
-    ├── includes/
-    │   ├── header.php
-    │   └── footer.php
-    ├── data/
-    └── assets/
-        └── img/
+│   └── database.php          # Tương thích: require includes/db.php
+├── includes/                 # Cấu hình DB, PDO, hàm URL, header/footer, layout admin & staff
+├── assets/
+│   ├── css/                  # style.css, admin.css, staff.css
+│   ├── js/                   # main.js, admin.js, filter.js
+│   └── images/
+├── frontend/                 # Trang khách: trang chủ, tour, đặt tour, blog, hồ sơ, …
+├── auth/                     # Đăng nhập, đăng ký, đăng xuất, quên mật khẩu, …
+├── admin/                    # Quản trị: dashboard, tours, bookings, users, …
+├── staff/                    # Khu vực nhân viên (dashboard, đơn, blog, …)
+├── uploads/                  # File upload (tours, blog, avatars)
+└── database/
+    ├── tour_management.sql   # Tạo database + toàn bộ bảng
+    └── sample_data.sql       # Dữ liệu mẫu (tài khoản, tour, đặt tour, …)
 ```
 
-## Hướng dẫn cài đặt và chạy dự án
+## Cài đặt cơ sở dữ liệu
 
-### 1) Chạy phần PHP + MySQL bằng XAMPP
+1. Bật MySQL (ví dụ trong XAMPP).
+2. Tạo schema và bảng:
 
-1. Đặt source vào thư mục:
-   - `/Applications/XAMPP/xamppfiles/htdocs/Tour_DuLich`
-2. Mở XAMPP và bật:
-   - Apache
-   - MySQL
-3. Import CSDL:
-   - Vào phpMyAdmin (`http://localhost/phpmyadmin`)
-   - Tạo database mới (ví dụ: `tour_dulich`)
-   - Import file `database.sql`
-4. Kiểm tra file kết nối DB:
-   - `config/database.php`
-   - Cập nhật host, user, password, tên database cho đúng máy của bạn
-5. Truy cập dự án:
-   - Trang người dùng: `http://localhost/Tour_DuLich/frontend/`
-   - Trang quản trị: `http://localhost/Tour_DuLich/admin/tours.php`
+   ```bash
+   mysql -u root -p < database/tour_management.sql
+   ```
 
-### 2) Chạy backend Node.js API (nếu sử dụng)
+3. (Khuyến nghị) Nạp dữ liệu mẫu:
 
-Trong `frontend/js/script.js`, một số chức năng đang gọi API:
-- `GET /api/tours`
-- `GET /api/bookings`
-- `POST /api/bookings`
+   ```bash
+   mysql -u root -p tour_dulich < database/sample_data.sql
+   ```
 
-Mặc định API base URL:
-- `http://localhost:4000/api`
+   Hoặc dùng phpMyAdmin: import lần lượt hai file trên.
 
-Nếu bạn có thư mục backend riêng, có thể chạy như sau:
+4. Cấu hình kết nối trong `includes/config.php` (host, user, password, port, tên DB `tour_dulich`).
+
+File `config/database.php` chỉ `require` lại `includes/db.php` để giữ một nơi cấu hình.
+
+### Tài khoản mẫu (sau khi chạy `sample_data.sql`)
+
+| Vai trò | Email | Mật khẩu |
+|--------|--------|----------|
+| Admin | `admin@dulichviet.test` | `password` |
+| Staff | `staff@dulichviet.test` | `password` |
+| Khách | `user1@dulichviet.test` … `user4@dulichviet.test` | `password` |
+
+Nếu đăng nhập lỗi, tạo hash mới bằng PHP và cập nhật cột `password` trong bảng `users`:
 
 ```bash
-cd backend
-npm install
-npm run dev
+php -r "echo password_hash('password', PASSWORD_DEFAULT), PHP_EOL;"
 ```
 
-## Lưu ý
+## Chạy dự án (XAMPP)
 
-- Nếu không bật backend Node.js, các chức năng dùng API (lấy tour, đặt tour đồng bộ qua API) có thể không hoạt động đầy đủ.
-- Nên đồng bộ cấu hình URL API trong `frontend/js/script.js` với môi trường bạn đang chạy.
-- Khi deploy thật, cần đổi thông tin database và URL API theo server sản xuất.
+1. Copy toàn bộ project vào `htdocs`, ví dụ:
+
+   `C:\xampp\htdocs\Tour_DuLich`  
+   hoặc macOS: `/Applications/XAMPP/xamppfiles/htdocs/Tour_DuLich`
+
+2. Bật **Apache** và **MySQL**.
+
+3. Truy cập (điều chỉnh theo đường dẫn thực tế):
+
+   - Trang chủ: `http://localhost/Tour_DuLich/frontend/index.php`
+   - Đăng nhập: `http://localhost/Tour_DuLich/auth/login.php`
+   - Admin: `http://localhost/Tour_DuLich/admin/index.php`
+   - Staff: `http://localhost/Tour_DuLich/staff/index.php`
+
+Nếu bạn cấu hình **virtual host** trỏ document root vào thư mục `Tour_DuLich`, URL sẽ ngắn hơn (ví dụ `/frontend/index.php`).
+
+## Chạy với MAMP (macOS)
+
+1. Đặt project trong **`/Applications/MAMP/htdocs/Tour_DuLich`** (hoặc symlink từ thư mục làm việc của bạn vào đây).
+2. Mở **MAMP** → bật **Start** (Apache + MySQL). Port mặc định thường là **Web 8888**, **MySQL 8889** (kiểm tra *Preferences → Ports*).
+3. Trong **`includes/config.php`** dùng đúng port MySQL và mật khẩu (mặc định MAMP hay là user `root` / password `root`, port `8889`). Repository đã có comment hướng dẫn chỉnh cho XAMPP.
+4. Import CSDL (terminal, đường dẫn `mysql` tùy phiên bản MAMP):
+
+   ```bash
+   /Applications/MAMP/Library/bin/mysql80/bin/mysql -u root -proot -h 127.0.0.1 -P 8889 < database/tour_management.sql
+   /Applications/MAMP/Library/bin/mysql80/bin/mysql -u root -proot -h 127.0.0.1 -P 8889 tour_dulich < database/sample_data.sql
+   ```
+
+5. Truy cập:
+
+   - Trang chủ: `http://localhost:8888/Tour_DuLich/frontend/index.php`
+   - Đăng nhập: `http://localhost:8888/Tour_DuLich/auth/login.php`
+
+**Lưu ý:** Nếu bạn mở project từ Desktop trong Cursor nhưng Apache trỏ vào `htdocs`, hai bản có thể **lệch file** — sau khi sửa code nên đồng bộ (copy/rsync/symlink) hoặc chỉ làm việc trên một bản duy nhất.
+
+## Chức năng chính (mapping code)
+
+- **Khách (`frontend/`)**: xem tour, chi tiết, đặt tour (`booking.php` — JSON), lịch sử đặt, đánh giá tour, blog & phản hồi.
+- **Xác thực (`auth/`)**: đăng ký, đăng nhập (phân luồng admin / staff / user), đăng xuất, quên mật khẩu.
+- **Admin (`admin/`)**: dashboard thống kê, quản lý tour, đơn, người dùng, nhiều module stub sẵn cấu trúc thư mục.
+- **Staff (`staff/`)**: dashboard và module xử lý (stub theo cấu trúc dự án).
+
+## Ghi chú
+
+- Đặt tour và phần lớn luồng dùng **PHP + MySQL**, không phụ thuộc Node.js.
+- Trong `assets/js/main.js` có thể còn hằng số `API_BASE_URL` (ví dụ `localhost:4000`); các luồng hiện tại ưu tiên gọi endpoint PHP (`booking.php`, …). Nếu bạn thêm backend Node riêng, cần chỉnh URL cho khớp.
+- Khi deploy production: đổi mật khẩu database, tắt hiển thị lỗi PHP, bật HTTPS, và rà soát quyền thư mục `uploads/`.
+
+---
+
+© Dự án Tour_DuLich — tài liệu cập nhật theo cấu trúc mã nguồn hiện tại.

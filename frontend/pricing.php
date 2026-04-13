@@ -9,14 +9,14 @@ $activePage = 'pricing';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bảng Giá - Du Lịch Việt</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
   <body class="pricing-page">
-    <?php require_once __DIR__ . '/includes/header.php'; ?>
+    <?php require_once __DIR__ . '/../includes/header.php'; ?>
 
     <section class="hero-section pricing-hero">
       <div class="hero-overlay"></div>
@@ -243,8 +243,8 @@ $activePage = 'pricing';
       </div>
     </section>
 
-    <?php require_once __DIR__ . '/includes/footer.php'; ?>
-    <script src="js/script.js"></script>
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
+    <script src="../assets/js/main.js"></script>
     <script>
       (function () {
         var root = document.querySelector("[data-pricing-root]");

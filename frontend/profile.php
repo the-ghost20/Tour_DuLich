@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 if (empty($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
 
@@ -24,12 +24,16 @@ $user = $stmt->fetch();
 
 if (!$user) {
     session_destroy();
-    header('Location: login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
 
 if ((string) $user['role'] === 'admin') {
-    header('Location: ../admin/tours.php');
+    header('Location: ../admin/index.php');
+    exit;
+}
+if ((string) $user['role'] === 'staff') {
+    header('Location: ../staff/index.php');
     exit;
 }
 
@@ -116,13 +120,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hồ sơ cá nhân - Du Lịch Việt</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <?php
       $activePage = '';
-      require __DIR__ . '/includes/header.php';
+      require __DIR__ . '/../includes/header.php';
     ?>
 
     <section class="profile-hero">
@@ -192,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
 
-    <?php require __DIR__ . '/includes/footer.php'; ?>
-    <script src="js/script.js"></script>
+    <?php require __DIR__ . '/../includes/footer.php'; ?>
+    <script src="../assets/js/main.js"></script>
   </body>
 </html>

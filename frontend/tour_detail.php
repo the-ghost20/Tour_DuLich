@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -130,13 +130,13 @@ $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= $tourName ?> - Du Lịch Việt</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <?php
       $activePage = 'tours';
-      require __DIR__ . '/includes/header.php';
+      require __DIR__ . '/../includes/header.php';
     ?>
 
     <article class="tour-detail-page">
@@ -218,7 +218,7 @@ $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating
                 <button type="submit" class="profile-btn">Gửi đánh giá</button>
               </form>
             <?php else: ?>
-              <p class="tour-detail-muted"><a href="login.php">Đăng nhập</a> để gửi đánh giá và bình luận.</p>
+              <p class="tour-detail-muted"><a href="../auth/login.php">Đăng nhập</a> để gửi đánh giá và bình luận.</p>
             <?php endif; ?>
           </section>
         </div>
@@ -239,12 +239,12 @@ $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating
       </div>
     </article>
 
-    <?php require __DIR__ . '/includes/booking_modal.php'; ?>
+    <?php require __DIR__ . '/../includes/booking_modal.php'; ?>
 
-    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <?php require __DIR__ . '/../includes/footer.php'; ?>
     <script>
       window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
     </script>
-    <script src="js/script.js"></script>
+    <script src="../assets/js/main.js"></script>
   </body>
 </html>

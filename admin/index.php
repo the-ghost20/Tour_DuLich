@@ -4,14 +4,14 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)) {
-    header('Location: ../frontend/login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
 
@@ -136,13 +136,14 @@ function adminH2(mixed $v): string {
 $pageTitle    = 'Tổng quan Dashboard';
 $pageSubtitle = 'Xin chào, ' . $_SESSION['full_name'] . ' 👋';
 $activePage   = 'dashboard';
-$cssDepth      = '../';
 
+$addTourUrl  = htmlspecialchars(app_admin_url('tours/add.php'), ENT_QUOTES, 'UTF-8');
+$userSiteUrl = htmlspecialchars(app_url('frontend/index.php'), ENT_QUOTES, 'UTF-8');
 $topbarActions = <<<HTML
-  <a href="tours.php" class="topbar-btn topbar-btn-primary">
+  <a href="{$addTourUrl}" class="topbar-btn topbar-btn-primary">
     <i class="fas fa-plus"></i> Thêm Tour Mới
   </a>
-  <a href="../frontend/index.php" class="topbar-btn topbar-btn-ghost" target="_blank">
+  <a href="{$userSiteUrl}" class="topbar-btn topbar-btn-ghost" target="_blank">
     <i class="fas fa-external-link-alt"></i> Xem trang web
   </a>
 HTML;
@@ -151,7 +152,7 @@ $extraHead = <<<HTML
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 HTML;
 
-require __DIR__ . '/includes/header.php';
+require __DIR__ . '/../includes/admin_header.php';
 ?>
 
 <!-- ═══════════════════════════════════════════════
@@ -572,5 +573,5 @@ Chart.defaults.color = '#6b7280';
 </script>
 JS;
 
-require __DIR__ . '/includes/footer.php';
+require __DIR__ . '/../includes/admin_footer.php';
 ?>

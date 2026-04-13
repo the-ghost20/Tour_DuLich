@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -71,7 +71,7 @@ function durationFilterTag(string $duration): string
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Danh Sách Tour - Du Lịch Việt</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -80,7 +80,7 @@ function durationFilterTag(string $duration): string
   <body>
     <?php
       $activePage = 'tours';
-      require __DIR__ . '/includes/header.php';
+      require __DIR__ . '/../includes/header.php';
     ?>
 
     <!-- HERO SECTION -->
@@ -340,14 +340,14 @@ function durationFilterTag(string $duration): string
       </main>
     </div>
 
-    <?php require __DIR__ . '/includes/booking_modal.php'; ?>
+    <?php require __DIR__ . '/../includes/booking_modal.php'; ?>
 
-    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <?php require __DIR__ . '/../includes/footer.php'; ?>
 
     <script>
       // Truyền trạng thái đăng nhập từ PHP session xuống JS
       window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
     </script>
-    <script src="js/script.js"></script>
+    <script src="../assets/js/main.js"></script>
   </body>
 </html>

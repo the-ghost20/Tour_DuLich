@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/db.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -49,14 +49,14 @@ $activePage = 'blog';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Blog Du Lịch - Du Lịch Việt</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
   <body class="blog-page">
-    <?php require_once __DIR__ . '/includes/header.php'; ?>
+    <?php require_once __DIR__ . '/../includes/header.php'; ?>
 
     <section class="hero-section blog-hero">
       <div class="hero-overlay"></div>
@@ -127,7 +127,7 @@ $activePage = 'blog';
                 ăn uống phù hợp cho nhóm bạn hoặc gia đình.
               </p>
               <p class="blog-read-row">
-                <a href="blog_post.php?slug=dalat-kinh-nghiem" class="blog-read-full">Đọc bài đầy đủ</a>
+                <a href="blog_detail.php?slug=dalat-kinh-nghiem" class="blog-read-full">Đọc bài đầy đủ</a>
               </p>
               <a href="tours.php" class="blog-cta-link"
                 >Xem ngay các tour Đà Lạt hấp dẫn <i class="fas fa-arrow-right"></i
@@ -171,7 +171,7 @@ $activePage = 'blog';
                 <span><i class="far fa-calendar"></i> 05/04/2026</span>
                 <span><i class="far fa-user"></i> Admin Du Lịch Việt</span>
               </div>
-              <a class="blog-cta-btn" href="blog_post.php?slug=sapa-mua-nao-dep">Đọc bài đầy đủ</a>
+              <a class="blog-cta-btn" href="blog_detail.php?slug=sapa-mua-nao-dep">Đọc bài đầy đủ</a>
               <a class="blog-cta-btn blog-cta-btn--secondary" href="tours.php">Xem tour Sapa</a>
             </div>
           </article>
@@ -222,7 +222,7 @@ $activePage = 'blog';
                 <span><i class="far fa-calendar"></i> 03/04/2026</span>
                 <span><i class="far fa-user"></i> Thảo Nhi</span>
               </div>
-              <a class="blog-cta-btn" href="blog_post.php?slug=review-phu-quoc-resort">Đọc bài đầy đủ</a>
+              <a class="blog-cta-btn" href="blog_detail.php?slug=review-phu-quoc-resort">Đọc bài đầy đủ</a>
               <a class="blog-cta-btn blog-cta-btn--secondary" href="tours.php">Xem tour Phú Quốc</a>
             </div>
           </article>
@@ -554,8 +554,8 @@ $activePage = 'blog';
       </div>
     </section>
 
-    <?php require_once __DIR__ . '/includes/footer.php'; ?>
-    <script src="js/script.js"></script>
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
+    <script src="../assets/js/main.js"></script>
     <script>
       (function () {
         var root = document.querySelector("[data-blog-root]");
