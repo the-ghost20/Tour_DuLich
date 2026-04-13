@@ -1,5 +1,5 @@
     <!-- ========== BOOKING MODAL ========== -->
-    <div id="booking-modal" class="bk-backdrop" role="dialog" aria-modal="true" aria-labelledby="bk-modal-title" style="display:none;">
+    <div id="booking-modal" class="bk-backdrop" role="dialog" aria-modal="true" aria-labelledby="bk-modal-title">
       <div class="bk-box">
         <button class="bk-close" id="bk-close-btn" aria-label="Đóng"><i class="fas fa-times"></i></button>
 
@@ -18,6 +18,11 @@
 
         <form id="bk-form" novalidate>
           <input type="hidden" id="bk-tour-id" name="tour_id" value="" />
+
+          <div class="bk-field bk-field-full">
+            <label for="bk-departure"><i class="fas fa-calendar-alt"></i> Ngày khởi hành</label>
+            <input type="date" id="bk-departure" name="departure_date" required class="bk-input-date" />
+          </div>
 
           <div class="bk-row">
             <div class="bk-field">
@@ -38,9 +43,31 @@
             </div>
           </div>
 
-          <div class="bk-total">
-            <span>Tổng tiền:</span>
-            <strong id="bk-total-display">—</strong>
+          <div class="bk-field bk-field-full">
+            <label for="bk-coupon"><i class="fas fa-ticket-alt"></i> Mã khuyến mãi <small>(tuỳ chọn)</small></label>
+            <div class="bk-coupon-row">
+              <input type="text" id="bk-coupon" name="coupon_code" class="bk-coupon-input" placeholder="Ví dụ: SUMMER10" autocomplete="off" />
+              <button type="button" class="bk-btn-apply-coupon" id="bk-apply-coupon">Áp dụng</button>
+            </div>
+          </div>
+
+          <div class="bk-summary">
+            <div class="bk-summary-row">
+              <span>Tạm tính</span>
+              <strong id="bk-subtotal-display">—</strong>
+            </div>
+            <div class="bk-summary-row" id="bk-holiday-row" style="display:none;">
+              <span id="bk-holiday-label">Phụ thu lễ</span>
+              <strong id="bk-holiday-display">—</strong>
+            </div>
+            <div class="bk-summary-row bk-discount-row" id="bk-discount-row" style="display:none;">
+              <span>Giảm giá</span>
+              <strong id="bk-discount-display">—</strong>
+            </div>
+            <div class="bk-summary-row bk-summary-total">
+              <span>Tổng thanh toán</span>
+              <strong id="bk-total-display">—</strong>
+            </div>
           </div>
 
           <div id="bk-msg" class="bk-msg" style="display:none;"></div>
@@ -65,29 +92,33 @@
       </div>
     </div>
 
-    <div id="login-required-modal" class="bk-backdrop" role="dialog" style="display:none;">
+    <div id="login-required-modal" class="bk-backdrop" role="dialog">
       <div class="bk-box" style="max-width:420px;text-align:center;">
         <button class="bk-close" id="lr-close-btn" aria-label="Đóng"><i class="fas fa-times"></i></button>
         <div class="bk-icon" style="margin:0 auto 16px;"><i class="fas fa-lock"></i></div>
         <h2 style="margin:0 0 8px;font-size:1.5rem;color:#0f2552;">Cần đăng nhập</h2>
         <p style="color:#6b7fa0;margin:0 0 24px;">Vui lòng đăng nhập để đặt tour và theo dõi các chuyến đi của bạn.</p>
         <div class="bk-actions" style="justify-content:center;gap:12px;">
-          <a href="login.php" class="bk-btn-submit" style="text-decoration:none;"><i class="fas fa-sign-in-alt"></i> Đăng nhập ngay</a>
-          <a href="register.php" class="bk-btn-cancel" style="text-decoration:none;">Đăng ký</a>
+          <a href="../auth/login.php" class="bk-btn-submit" style="text-decoration:none;"><i class="fas fa-sign-in-alt"></i> Đăng nhập ngay</a>
+          <a href="../auth/register.php" class="bk-btn-cancel" style="text-decoration:none;">Đăng ký</a>
         </div>
       </div>
     </div>
 
     <style>
+    /* Mặc định ẩn — không dùng display:flex !important ở đây (sẽ ghi đè inline display:none) */
     .bk-backdrop {
       position: fixed; inset: 0;
       background: rgba(8, 20, 55, 0.6);
       backdrop-filter: blur(8px);
       z-index: 9999;
-      display: flex !important;
+      display: none;
       align-items: center;
       justify-content: center;
       padding: 16px;
+    }
+    .bk-backdrop.is-open {
+      display: flex !important;
       animation: bkFadeIn 0.2s ease;
     }
     @keyframes bkFadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -129,6 +160,45 @@
     .bk-price-label { color: #7088b5; font-size: 0.88rem; font-weight: 500; }
     .bk-price-val { color: #1a73e8; font-weight: 800; font-size: 1.05rem; }
     .bk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .bk-field-full { margin-bottom: 14px; }
+    .bk-input-date {
+      width: 100%; box-sizing: border-box;
+      padding: 11px 14px; border-radius: 12px;
+      border: 2px solid #d6e4f8; font-size: 0.95rem; font-weight: 600;
+      color: #0f2552; background: #fafcff;
+    }
+    .bk-input-date:focus { outline: none; border-color: #1a73e8; background: #fff; }
+    .bk-coupon-row { display: flex; gap: 8px; align-items: stretch; }
+    .bk-coupon-input {
+      flex: 1; min-width: 0;
+      padding: 11px 14px; border-radius: 12px;
+      border: 2px solid #d6e4f8; font-size: 0.92rem;
+      color: #0f2552; background: #fafcff; text-transform: uppercase;
+    }
+    .bk-coupon-input:focus { outline: none; border-color: #1a73e8; background: #fff; }
+    .bk-btn-apply-coupon {
+      flex-shrink: 0; padding: 0 16px; border-radius: 12px;
+      border: 2px solid #1a73e8; background: #eef5ff;
+      color: #1255b5; font-weight: 700; font-size: 0.88rem; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .bk-btn-apply-coupon:hover { background: #dce8f8; }
+    .bk-summary {
+      background: #f0f9ff; border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 16px;
+      border: 1.5px solid #b3d9ff;
+    }
+    .bk-summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.9rem; margin-bottom: 6px;
+    }
+    .bk-summary-row:last-child { margin-bottom: 0; }
+    .bk-summary-row span { color: #4a6080; font-weight: 500; }
+    .bk-summary-row strong { color: #0d47a1; font-weight: 700; }
+    .bk-summary-total { margin-top: 8px; padding-top: 10px; border-top: 1px dashed #93c5fd; }
+    .bk-summary-total span { font-weight: 600; }
+    .bk-summary-total strong { font-size: 1.2rem; font-weight: 800; }
+    .bk-discount-row strong { color: #15803d; }
     .bk-field label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.87rem; color: #2a3d60; }
     .bk-field label small { color: #8aa0c8; font-weight: 400; }
     .bk-counter {
@@ -147,14 +217,6 @@
       font-size: 1rem; font-weight: 700; color: #0f2552;
       background: #fff; width: 0;
     }
-    .bk-total {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #f0f9ff; border-radius: 12px;
-      padding: 12px 16px; margin-bottom: 16px;
-      border: 1.5px solid #b3d9ff;
-    }
-    .bk-total span { color: #4a6080; font-weight: 500; }
-    .bk-total strong { color: #0d47a1; font-size: 1.2rem; font-weight: 800; }
     .bk-msg {
       padding: 10px 14px; border-radius: 10px;
       font-size: 0.9rem; font-weight: 600; margin-bottom: 14px;

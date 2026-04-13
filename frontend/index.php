@@ -76,7 +76,7 @@ try {
           ></a>
         </div>
 
-        <div class="hot-tours-grid" id="hot-tours-grid">
+        <div class="hot-tours-grid" id="hot-tours-grid" data-hot-tours-static="1">
           <?php if (empty($hotTours)): ?>
             <div class="hot-tour-card">
               <div class="tour-info">

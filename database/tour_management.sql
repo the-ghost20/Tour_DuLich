@@ -52,6 +52,7 @@ CREATE TABLE `tours` (
   `category_id` INT UNSIGNED NULL DEFAULT NULL,
   `tour_name` VARCHAR(255) NOT NULL,
   `description` TEXT NULL,
+  `itinerary` MEDIUMTEXT NULL DEFAULT NULL,
   `destination` VARCHAR(255) NOT NULL,
   `duration` VARCHAR(80) NOT NULL DEFAULT '',
   `price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -78,6 +79,11 @@ CREATE TABLE `bookings` (
   `tour_id` INT UNSIGNED NOT NULL,
   `adults` INT UNSIGNED NOT NULL DEFAULT 1,
   `children` INT UNSIGNED NOT NULL DEFAULT 0,
+  `departure_date` DATE NULL DEFAULT NULL,
+  `coupon_code` VARCHAR(40) NULL DEFAULT NULL,
+  `discount_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `holiday_surcharge_percent` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `holiday_surcharge_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   `total_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   `status` ENUM(
     'chờ duyệt',
@@ -137,6 +143,45 @@ CREATE TABLE `blog_feedback` (
   KEY `idx_blog_feedback_user` (`user_id`),
   CONSTRAINT `fk_blog_feedback_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------------------------------
+-- Mã giảm giá & bài blog (admin: coupons/*, blog/*) — có thể import thêm sample từ
+-- database/migrations/001_admin_coupons_blog.sql
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `coupons` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(40) NOT NULL,
+  `discount_type` ENUM('percent','fixed') NOT NULL DEFAULT 'percent',
+  `discount_value` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `min_order_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `max_uses` INT UNSIGNED NULL DEFAULT NULL,
+  `used_count` INT UNSIGNED NOT NULL DEFAULT 0,
+  `starts_at` DATE NULL DEFAULT NULL,
+  `expires_at` DATE NULL DEFAULT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_coupons_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `blog_posts` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(255) NOT NULL,
+  `slug` VARCHAR(280) NOT NULL,
+  `excerpt` VARCHAR(500) NULL DEFAULT NULL,
+  `body` MEDIUMTEXT NULL,
+  `status` ENUM('draft','published') NOT NULL DEFAULT 'draft',
+  `published_at` DATETIME NULL DEFAULT NULL,
+  `author_id` INT UNSIGNED NULL DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_blog_posts_slug` (`slug`),
+  KEY `idx_blog_posts_status` (`status`),
+  CONSTRAINT `fk_blog_posts_author`
+    FOREIGN KEY (`author_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

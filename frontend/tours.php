@@ -256,7 +256,7 @@ function durationFilterTag(string $duration): string
         </div>
 
         <!-- TOURS GRID -->
-        <div class="tours-grid" id="tours-grid">
+        <div class="tours-grid" id="tours-grid" data-tours-static="1">
           <?php if (empty($tours)): ?>
           <div class="empty-state">
             <i class="fas fa-inbox"></i>
@@ -348,6 +348,6 @@ function durationFilterTag(string $duration): string
       // Truyền trạng thái đăng nhập từ PHP session xuống JS
       window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
     </script>
-    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/main.js?v=9"></script>
   </body>
 </html>

@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/functions.php';
+if (!isset($pdo)) {
+    require_once __DIR__ . '/db.php';
+}
 
 /**
  * Admin shared sidebar + topbar partial.
@@ -113,8 +116,8 @@ function adminH(mixed $v): string {
       <?php endif; ?>
 
       <div class="nav-section-label">Liên kết</div>
-      <a href="<?= htmlspecialchars(app_url('frontend/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item" target="_blank">
-        <i class="fas fa-external-link-alt"></i> Trang khách hàng
+      <a href="<?= htmlspecialchars(app_url('frontend/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item">
+        <i class="fas fa-globe"></i> Trang khách hàng
       </a>
 
     </nav>

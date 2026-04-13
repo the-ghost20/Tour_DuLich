@@ -24,7 +24,7 @@ function staffH(mixed $v): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><?= staffH($pageTitle) ?> — Staff</title>
+  <title><?= staffH($pageTitle) ?> — Du Lịch Việt</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="<?= htmlspecialchars(app_asset_url('css/staff.css'), ENT_QUOTES, 'UTF-8') ?>" />
@@ -38,41 +38,44 @@ function staffH(mixed $v): string {
 
   <aside class="admin-sidebar" id="staffSidebar">
     <a href="<?= htmlspecialchars(app_staff_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="sidebar-brand">
-      <div class="brand-icon"><i class="fas fa-headset"></i></div>
+      <div class="brand-icon"><i class="fas fa-suitcase-rolling"></i></div>
       <div class="brand-text">
         <strong>Du Lịch Việt</strong>
-        <span>Staff</span>
+        <span>Khu vực nhân viên</span>
       </div>
     </a>
 
     <nav class="sidebar-nav">
-      <div class="nav-section-label">Tong quan</div>
+      <div class="nav-section-label">Công việc</div>
       <a href="<?= htmlspecialchars(app_staff_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'dashboard' ? 'active' : '' ?>">
-        <i class="fas fa-home"></i> Dashboard
+        <i class="fas fa-gauge-high"></i> Bảng điều khiển
       </a>
-      <div class="nav-section-label">Xử lý</div>
       <a href="<?= htmlspecialchars(app_staff_url('bookings/list.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'bookings' ? 'active' : '' ?>">
-        <i class="fas fa-calendar-check"></i> Don dat tour
+        <i class="fas fa-clipboard-list"></i> Đơn đặt tour
       </a>
       <a href="<?= htmlspecialchars(app_staff_url('tours/update_slots.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'tour_slots' ? 'active' : '' ?>">
-        <i class="fas fa-chair"></i> Cap nhat cho trong
+        <i class="fas fa-users-line"></i> Cập nhật chỗ trống
       </a>
       <a href="<?= htmlspecialchars(app_staff_url('reviews/list.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'reviews' ? 'active' : '' ?>">
-        <i class="fas fa-star"></i> Danh gia
+        <i class="fas fa-star-half-stroke"></i> Đánh giá
       </a>
       <a href="<?= htmlspecialchars(app_staff_url('blog/list.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'blog' ? 'active' : '' ?>">
-        <i class="fas fa-newspaper"></i> Blog
+        <i class="fas fa-pen-to-square"></i> Blog
       </a>
       <a href="<?= htmlspecialchars(app_staff_url('contact/list.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'contact' ? 'active' : '' ?>">
-        <i class="fas fa-envelope"></i> Liên hệ
+        <i class="fas fa-envelope-open-text"></i> Liên hệ
+      </a>
+      <div class="nav-section-label">Tài khoản</div>
+      <a href="<?= htmlspecialchars(app_staff_url('profile.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item <?= $activePage === 'profile' ? 'active' : '' ?>">
+        <i class="fas fa-id-card"></i> Hồ sơ cá nhân
       </a>
       <div class="nav-section-label">Liên kết</div>
-      <a href="<?= htmlspecialchars(app_url('frontend/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item" target="_blank">
-        <i class="fas fa-external-link-alt"></i> Trang khách
+      <a href="<?= htmlspecialchars(app_url('frontend/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item">
+        <i class="fas fa-globe"></i> Trang khách hàng
       </a>
       <?php if ($staffRole === 'admin'): ?>
       <a href="<?= htmlspecialchars(app_admin_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-item">
-        <i class="fas fa-user-shield"></i> Admin
+        <i class="fas fa-shield-halved"></i> Trang quản trị
       </a>
       <?php endif; ?>
     </nav>
@@ -82,18 +85,23 @@ function staffH(mixed $v): string {
         <div class="user-avatar"><?= staffH($initials) ?></div>
         <div class="user-info">
           <strong><?= staffH($staffName) ?></strong>
-          <span>Nhân viên</span>
+          <span><?= $staffRole === 'admin' ? 'Quản trị viên' : 'Nhân viên' ?></span>
         </div>
-        <a href="<?= htmlspecialchars(app_url('auth/logout.php'), ENT_QUOTES, 'UTF-8') ?>" class="sidebar-user-logout" title="Đăng xuất">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
+        <div class="staff-sidebar-user-actions">
+          <a href="<?= htmlspecialchars(app_staff_url('profile.php'), ENT_QUOTES, 'UTF-8') ?>" class="staff-sidebar-icon-btn" title="Hồ sơ cá nhân">
+            <i class="fas fa-user-gear"></i>
+          </a>
+          <a href="<?= htmlspecialchars(app_url('auth/logout.php'), ENT_QUOTES, 'UTF-8') ?>" class="staff-sidebar-icon-btn staff-sidebar-icon-btn--logout" title="Đăng xuất">
+            <i class="fas fa-right-from-bracket"></i>
+          </a>
+        </div>
       </div>
     </div>
   </aside>
 
   <main class="admin-main">
     <header class="admin-topbar">
-      <button class="sidebar-toggle" id="staffSidebarToggle" aria-label="Menu">
+      <button class="sidebar-toggle" id="staffSidebarToggle" aria-label="Mở hoặc đóng menu">
         <i class="fas fa-bars"></i>
       </button>
       <div class="topbar-title">

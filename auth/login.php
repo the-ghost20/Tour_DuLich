@@ -10,9 +10,16 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 $errors = [];
 $email = '';
 
+$registerSuccess = false;
+if (!empty($_SESSION['register_success'])) {
+    $registerSuccess = true;
+    unset($_SESSION['register_success']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim((string) ($_POST['email'] ?? ''));
+    $email = mb_strtolower(trim((string) ($_POST['email'] ?? '')), 'UTF-8');
     $password = (string) ($_POST['password'] ?? '');
+    $password = trim($password);
 
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Email không hợp lệ.';
@@ -22,12 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $stmt = $pdo->prepare("SELECT id, full_name, password, role FROM users WHERE email = :email LIMIT 1");
+        $stmt = $pdo->prepare(
+            'SELECT id, full_name, password, role, is_active FROM users WHERE LOWER(email) = LOWER(:email) LIMIT 1'
+        );
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
 
         if (!$user || !password_verify($password, (string) $user['password'])) {
             $errors[] = 'Email hoặc mật khẩu không đúng.';
+        } elseif ((int) ($user['is_active'] ?? 1) !== 1) {
+            $errors[] = 'Tài khoản đã bị tạm khóa. Liên hệ quản trị viên.';
         } else {
             session_regenerate_id(true);
             $_SESSION['user_id'] = (int) $user['id'];
@@ -103,6 +114,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       .auth-page .auth-btn { display:inline-block; border:none; border-radius: 12px; padding: 12px 18px; cursor:pointer; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color:#fff; font-weight: 700; box-shadow: 0 12px 22px rgba(33, 150, 243, .24); }
       .auth-page .auth-link { color: var(--primary-color); font-weight: 600; }
       .auth-page .auth-alert { background:#f8d7da; border:1px solid #f1aeb5; color:#842029; padding: 12px 14px; border-radius: 12px; margin-bottom: 14px; }
+      .auth-page .auth-alert--success {
+        background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+        display: flex; align-items: flex-start; gap: 10px; font-weight: 600;
+      }
+      .auth-page .auth-alert--success i { margin-top: 2px; color: #059669; }
       .auth-page .auth-errors { margin:0; padding-left:18px; }
     </style>
   </head>
@@ -118,6 +134,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="auth-container">
         <h1 class="auth-title">Đăng nhập</h1>
         <p class="auth-subtitle">Đăng nhập để tiếp tục đặt tour và theo dõi các chuyến đi của bạn.</p>
+
+        <?php if ($registerSuccess): ?>
+          <div class="auth-alert auth-alert--success" role="status">
+            <i class="fas fa-check-circle"></i>
+            <span>Đăng ký tài khoản thành công! Vui lòng đăng nhập bằng email và mật khẩu bạn vừa tạo.</span>
+          </div>
+        <?php endif; ?>
 
         <?php if (!empty($errors)): ?>
           <div class="auth-alert">

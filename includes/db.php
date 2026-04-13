@@ -19,4 +19,10 @@ try {
     exit('Không thể kết nối đến database. Vui lòng thử lại sau.');
 }
 
+require_once __DIR__ . '/schema_migrations.php';
+app_ensure_bookings_departure_coupon_columns($pdo, $dbName);
+app_ensure_bookings_holiday_surcharge_columns($pdo, $dbName);
+app_ensure_tours_itinerary_column($pdo, $dbName);
+app_seed_tour_itinerary_defaults($pdo);
+
 require_once __DIR__ . '/functions.php';

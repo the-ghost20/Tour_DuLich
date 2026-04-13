@@ -143,8 +143,8 @@ $topbarActions = <<<HTML
   <a href="{$addTourUrl}" class="topbar-btn topbar-btn-primary">
     <i class="fas fa-plus"></i> Thêm Tour Mới
   </a>
-  <a href="{$userSiteUrl}" class="topbar-btn topbar-btn-ghost" target="_blank">
-    <i class="fas fa-external-link-alt"></i> Xem trang web
+  <a href="{$userSiteUrl}" class="topbar-btn topbar-btn-ghost">
+    <i class="fas fa-globe"></i> Xem trang web
   </a>
 HTML;
 
@@ -306,7 +306,7 @@ require __DIR__ . '/../includes/admin_header.php';
       <div class="data-card-title">Đơn đặt tour gần đây</div>
       <div class="data-card-sub">8 đơn mới nhất trong hệ thống</div>
     </div>
-    <a href="bookings.php" class="btn btn-ghost btn-sm">
+    <a href="<?= htmlspecialchars(app_admin_url('bookings/list.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-ghost btn-sm">
       <i class="fas fa-arrow-right"></i> Xem tất cả
     </a>
   </div>
@@ -348,7 +348,7 @@ require __DIR__ . '/../includes/admin_header.php';
               <td><span class="badge <?= $cls ?>"><span class="badge-dot"></span><?= adminH2($st) ?></span></td>
               <td class="cell-muted"><?= date('d/m/Y', strtotime($b['created_at'])) ?></td>
               <td class="cell-right">
-                <a href="bookings.php" class="btn btn-ghost btn-sm btn-icon" title="Xem chi tiết">
+                <a href="<?= htmlspecialchars(app_admin_url('bookings/detail.php?id=' . (int) $b['id']), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-ghost btn-sm btn-icon" title="Xem chi tiết">
                   <i class="fas fa-eye"></i>
                 </a>
               </td>
@@ -369,7 +369,7 @@ require __DIR__ . '/../includes/admin_header.php';
       <div class="data-card-title">Top tour theo doanh thu</div>
       <div class="data-card-sub">5 tour doanh thu cao nhất (không tính đơn hủy)</div>
     </div>
-    <a href="tours.php" class="btn btn-ghost btn-sm">
+    <a href="<?= htmlspecialchars(app_admin_url('tours/list.php'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-ghost btn-sm">
       <i class="fas fa-arrow-right"></i> Quản lý tour
     </a>
   </div>

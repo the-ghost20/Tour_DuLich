@@ -28,6 +28,11 @@ let currentFilters = {
 };
 
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+/**
+ * Tour & thống kê lấy từ PHP/MySQL (render sẵn). API Node cổng 4000 không tồn tại trong stack MAMP →
+ * bật true chỉ khi bạn chạy thêm backend Node và muốn ghi đè danh sách tour bằng API.
+ */
+const USE_LEGACY_NODE_TOUR_API = false;
 const API_BASE_URL = "http://localhost:4000/api";
 
 function escapeHtml(text) {
@@ -334,7 +339,8 @@ function getTourImageUrl(index) {
 }
 
 async function loadToursFromApi() {
-  if (!toursGrid) return;
+  if (!USE_LEGACY_NODE_TOUR_API || !toursGrid) return;
+  if (toursGrid.dataset.toursStatic === "1") return;
   try {
     const response = await fetch(`${API_BASE_URL}/tours`);
     const data = await response.json();
@@ -394,7 +400,8 @@ async function loadToursFromApi() {
 }
 
 async function loadHotToursFromApi() {
-  if (!hotToursGrid) return;
+  if (!USE_LEGACY_NODE_TOUR_API || !hotToursGrid) return;
+  if (hotToursGrid.dataset.hotToursStatic === "1") return;
   try {
     const response = await fetch(`${API_BASE_URL}/tours`);
     const data = await response.json();
@@ -430,6 +437,7 @@ async function loadHotToursFromApi() {
 }
 
 async function loadAboutStats() {
+  if (!USE_LEGACY_NODE_TOUR_API) return;
   const stats = document.querySelectorAll(".stats-section .stat-item h3");
   if (!stats || stats.length < 3) return;
 
@@ -786,10 +794,130 @@ function loadWishlistUI() {
 
 let _bkTourId = null;
 let _bkTourPrice = 0;
+let _bkCouponApplied = false;
+let _bkQuoteTimer = null;
+
+function _bkTodayIso() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function _bkCouponCodeForQuote() {
+  if (!_bkCouponApplied) return "";
+  return (document.getElementById("bk-coupon")?.value || "").trim();
+}
+
+function _bkRenderQuoteFromJson(json) {
+  const base = Number(json.base_subtotal);
+  const hpct = Number(json.holiday_percent) || 0;
+  const hamt = Number(json.holiday_amount) || 0;
+  const disc = Number(json.discount) || 0;
+  const total = Number(json.total) || 0;
+
+  const subEl = document.getElementById("bk-subtotal-display");
+  if (subEl && !Number.isNaN(base)) {
+    subEl.textContent = base.toLocaleString("vi-VN") + " đ";
+  }
+
+  const hRow = document.getElementById("bk-holiday-row");
+  const hEl = document.getElementById("bk-holiday-display");
+  const hLbl = document.getElementById("bk-holiday-label");
+  if (hRow && hEl) {
+    if (hpct > 0) {
+      hRow.style.display = "flex";
+      if (hLbl) {
+        hLbl.textContent =
+          json.holiday_label || "Phụ thu lễ (+" + hpct + "%)";
+      }
+      hEl.textContent = "+ " + hamt.toLocaleString("vi-VN") + " đ";
+    } else {
+      hRow.style.display = "none";
+    }
+  }
+
+  const discRow = document.getElementById("bk-discount-row");
+  const discEl = document.getElementById("bk-discount-display");
+  const totEl = document.getElementById("bk-total-display");
+
+  if (disc > 0 && discRow && discEl) {
+    discRow.style.display = "flex";
+    discEl.textContent = "− " + disc.toLocaleString("vi-VN") + " đ";
+  } else if (discRow) {
+    discRow.style.display = "none";
+  }
+
+  if (totEl && !Number.isNaN(total)) {
+    totEl.textContent = total.toLocaleString("vi-VN") + " đ";
+  }
+}
+
+function _bkClientFallbackSummary(adults, children) {
+  const subtotal = _bkTourPrice * (adults + children * 0.5);
+  const subEl = document.getElementById("bk-subtotal-display");
+  if (subEl) subEl.textContent = subtotal.toLocaleString("vi-VN") + " đ";
+  const hRow = document.getElementById("bk-holiday-row");
+  if (hRow) hRow.style.display = "none";
+  const discRow = document.getElementById("bk-discount-row");
+  if (discRow) discRow.style.display = "none";
+  const totEl = document.getElementById("bk-total-display");
+  if (totEl) totEl.textContent = subtotal.toLocaleString("vi-VN") + " đ";
+}
+
+function _bkScheduleQuoteRefresh() {
+  if (_bkQuoteTimer) clearTimeout(_bkQuoteTimer);
+  _bkQuoteTimer = setTimeout(() => {
+    _bkQuoteTimer = null;
+    void _bkFetchQuote();
+  }, 280);
+}
+
+async function _bkFetchQuote() {
+  const tourId = _bkTourId;
+  if (!tourId) return;
+
+  const adults = parseInt(document.getElementById("bk-adults")?.value) || 1;
+  const children = parseInt(document.getElementById("bk-children")?.value) || 0;
+  const departure = (document.getElementById("bk-departure")?.value || "").trim();
+  const code = _bkCouponCodeForQuote();
+
+  if (!departure) {
+    _bkClientFallbackSummary(adults, children);
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append("tour_id", String(tourId));
+  fd.append("adults", String(adults));
+  fd.append("children", String(children));
+  fd.append("departure_date", departure);
+  fd.append("coupon_code", code);
+
+  try {
+    const res = await fetch("booking_quote.php", { method: "POST", body: fd });
+    const json = await res.json();
+
+    if (json.base_subtotal != null) {
+      _bkRenderQuoteFromJson(json);
+    }
+
+    if (json.success) {
+      if (code) _bkCouponApplied = true;
+    } else {
+      _bkCouponApplied = false;
+    }
+  } catch (_e) {
+    _bkClientFallbackSummary(adults, children);
+    _bkCouponApplied = false;
+  }
+}
 
 function openBookingModal(tourId, tourName, tourPrice) {
   _bkTourId = tourId;
   _bkTourPrice = Number(tourPrice) || 0;
+  _bkCouponApplied = false;
 
   const modal = document.getElementById("booking-modal");
   if (!modal) return;
@@ -801,6 +929,14 @@ function openBookingModal(tourId, tourName, tourPrice) {
     _bkTourPrice.toLocaleString("vi-VN") + " đ";
   document.getElementById("bk-adults").value = 1;
   document.getElementById("bk-children").value = 0;
+  const dep = document.getElementById("bk-departure");
+  if (dep) {
+    const t = _bkTodayIso();
+    dep.min = t;
+    dep.value = t;
+  }
+  const couponInp = document.getElementById("bk-coupon");
+  if (couponInp) couponInp.value = "";
   document.getElementById("bk-form").style.display = "";
   document.getElementById("bk-success").style.display = "none";
 
@@ -812,37 +948,34 @@ function openBookingModal(tourId, tourName, tourPrice) {
   submitBtn.disabled = false;
   submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Xác nhận đặt tour';
 
-  _bkUpdateTotal();
-  modal.style.display = "flex";
+  _bkScheduleQuoteRefresh();
+  modal.classList.add("is-open");
   document.body.style.overflow = "hidden";
 }
 
 function closeBookingModal() {
   const modal = document.getElementById("booking-modal");
-  if (modal) modal.style.display = "none";
+  if (modal) modal.classList.remove("is-open");
   document.body.style.overflow = "";
 }
 
 function openLoginRequiredModal() {
   const modal = document.getElementById("login-required-modal");
   if (modal) {
-    modal.style.display = "flex";
+    modal.classList.add("is-open");
     document.body.style.overflow = "hidden";
   }
 }
 
 function closeLoginRequiredModal() {
   const modal = document.getElementById("login-required-modal");
-  if (modal) modal.style.display = "none";
+  if (modal) modal.classList.remove("is-open");
   document.body.style.overflow = "";
 }
 
 function _bkUpdateTotal() {
-  const adults = parseInt(document.getElementById("bk-adults")?.value || 1);
-  const children = parseInt(document.getElementById("bk-children")?.value || 0);
-  const total = _bkTourPrice * (adults + children * 0.5);
-  const el = document.getElementById("bk-total-display");
-  if (el) el.textContent = total.toLocaleString("vi-VN") + " đ";
+  _bkCouponApplied = false;
+  _bkScheduleQuoteRefresh();
 }
 
 function _bkSetupModalEvents() {
@@ -899,6 +1032,85 @@ function _bkSetupModalEvents() {
 
   // Submit form
   const form = document.getElementById("bk-form");
+  const applyCouponBtn = document.getElementById("bk-apply-coupon");
+  if (applyCouponBtn) {
+    applyCouponBtn.addEventListener("click", async () => {
+      const msgEl = document.getElementById("bk-msg");
+      const adults = parseInt(document.getElementById("bk-adults").value) || 1;
+      const children = parseInt(document.getElementById("bk-children").value) || 0;
+      const departure = (document.getElementById("bk-departure")?.value || "").trim();
+      const code = (document.getElementById("bk-coupon")?.value || "").trim();
+      msgEl.style.display = "none";
+      if (!code) {
+        _bkCouponApplied = false;
+        _bkScheduleQuoteRefresh();
+        return;
+      }
+      if (!departure) {
+        msgEl.textContent = "Vui lòng chọn ngày khởi hành trước khi áp dụng mã.";
+        msgEl.className = "bk-msg is-error";
+        msgEl.style.display = "";
+        return;
+      }
+      applyCouponBtn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append("tour_id", String(_bkTourId));
+        fd.append("adults", String(adults));
+        fd.append("children", String(children));
+        fd.append("departure_date", departure);
+        fd.append("coupon_code", code);
+        const res = await fetch("booking_quote.php", { method: "POST", body: fd });
+        const json = await res.json();
+        if (!json.success) {
+          _bkCouponApplied = false;
+          if (json.base_subtotal != null) {
+            _bkRenderQuoteFromJson(json);
+          } else {
+            _bkScheduleQuoteRefresh();
+          }
+          msgEl.textContent = json.message || "Không áp dụng được mã.";
+          msgEl.className = "bk-msg is-error";
+          msgEl.style.display = "";
+          return;
+        }
+        _bkCouponApplied = true;
+        _bkRenderQuoteFromJson(json);
+        const disc = Number(json.discount) || 0;
+        msgEl.textContent =
+          disc > 0
+            ? "Đã áp dụng mã — giá đã cập nhật bên dưới."
+            : "Mã hợp lệ nhưng không có giảm thêm cho đơn này.";
+        msgEl.className = "bk-msg is-success";
+        msgEl.style.display = "";
+      } catch (_e) {
+        msgEl.textContent = "Không kiểm tra được mã. Thử lại.";
+        msgEl.className = "bk-msg is-error";
+        msgEl.style.display = "";
+      } finally {
+        applyCouponBtn.disabled = false;
+      }
+    });
+  }
+
+  const depInp = document.getElementById("bk-departure");
+  if (depInp) {
+    depInp.addEventListener("change", () => _bkScheduleQuoteRefresh());
+  }
+
+  const couponInput = document.getElementById("bk-coupon");
+  if (couponInput) {
+    couponInput.addEventListener("input", () => {
+      _bkCouponApplied = false;
+      _bkScheduleQuoteRefresh();
+      const msgEl = document.getElementById("bk-msg");
+      if (msgEl && msgEl.classList.contains("is-success")) {
+        msgEl.style.display = "none";
+        msgEl.textContent = "";
+      }
+    });
+  }
+
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -906,6 +1118,15 @@ function _bkSetupModalEvents() {
       const msgEl = document.getElementById("bk-msg");
       const adults = parseInt(document.getElementById("bk-adults").value) || 1;
       const children = parseInt(document.getElementById("bk-children").value) || 0;
+      const departure = (document.getElementById("bk-departure")?.value || "").trim();
+      const couponCode = (document.getElementById("bk-coupon")?.value || "").trim();
+
+      if (!departure) {
+        msgEl.textContent = "Vui lòng chọn ngày khởi hành.";
+        msgEl.className = "bk-msg is-error";
+        msgEl.style.display = "";
+        return;
+      }
 
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
@@ -916,6 +1137,8 @@ function _bkSetupModalEvents() {
         formData.append("tour_id", _bkTourId);
         formData.append("adults", adults);
         formData.append("children", children);
+        formData.append("departure_date", departure);
+        formData.append("coupon_code", couponCode);
 
         const res = await fetch("booking.php", {
           method: "POST",
@@ -951,19 +1174,28 @@ function handleBooking(e) {
   e.preventDefault();
   const btn = e.currentTarget;
   const tourCard = btn.closest(".tour-card");
-  const tourName = tourCard.querySelector("h3").textContent.trim();
 
-  // Đọc data từ button (được gán từ PHP) hoặc từ card attribute
+  // tour_detail.php: card đặt tour không có <h3> — ưu tiên data-* trên nút
+  const tourName =
+    (btn.dataset.tourName && String(btn.dataset.tourName).trim()) ||
+    tourCard?.querySelector("h3 a")?.textContent?.trim() ||
+    tourCard?.querySelector("h3")?.textContent?.trim() ||
+    "Tour";
+
   const tourId =
     btn.dataset.tourId ||
-    tourCard.dataset.tourId ||
-    tourCard.getAttribute("data-tour-id") ||
+    tourCard?.dataset.tourId ||
+    tourCard?.getAttribute("data-tour-id") ||
     "";
+
+  const priceFromDom =
+    tourCard?.querySelector(".tour-price")?.textContent?.replace(/\D/g, "") ||
+    tourCard?.querySelector(".tour-detail-price")?.textContent?.replace(/\D/g, "") ||
+    "0";
   const tourPrice =
-    btn.dataset.tourPrice ||
-    parseFloat(
-      tourCard.querySelector(".tour-price")?.textContent?.replace(/\D/g, "") || "0"
-    );
+    btn.dataset.tourPrice !== undefined && String(btn.dataset.tourPrice).trim() !== ""
+      ? Number.parseFloat(String(btn.dataset.tourPrice))
+      : parseFloat(priceFromDom) || 0;
 
   // Kiểm tra trạng thái đăng nhập từ PHP session (truyền qua biến JS toàn cục)
   const isLoggedIn =

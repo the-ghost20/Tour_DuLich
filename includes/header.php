@@ -21,10 +21,15 @@ $a = isset($a) ? (string) $a : '../auth/';
 
 $isLoggedIn = !empty($_SESSION['user_id']);
 $currentUserName = isset($_SESSION['full_name']) ? (string) $_SESSION['full_name'] : '';
+$userRole = isset($_SESSION['role']) ? (string) $_SESSION['role'] : '';
+$isAdmin  = $isLoggedIn && $userRole === 'admin';
+$isStaff  = $isLoggedIn && $userRole === 'staff';
+$isCustomerNav = !$isLoggedIn || (!$isAdmin && !$isStaff);
 ?>
 <!-- NAVIGATION BAR -->
 <nav class="navbar">
   <div class="navbar-container">
+    <div class="navbar-start">
     <a href="<?= htmlspecialchars($u . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="navbar-logo">
       <i class="fas fa-map-marker-alt"></i>
       <span>Du lịch Việt</span>
@@ -36,9 +41,12 @@ $currentUserName = isset($_SESSION['full_name']) ? (string) $_SESSION['full_name
       <li><a href="<?= htmlspecialchars($u . 'tours.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'tours' ? 'active' : '' ?>">TOUR DU LỊCH</a></li>
       <li><a href="<?= htmlspecialchars($u . 'pricing.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'pricing' ? 'active' : '' ?>">BẢNG GIÁ</a></li>
       <li><a href="<?= htmlspecialchars($u . 'blog.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'blog' ? 'active' : '' ?>">BLOG</a></li>
+      <?php if ($isCustomerNav): ?>
       <li><a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'wishlist' ? 'active' : '' ?>">YÊU THÍCH</a></li>
+      <?php endif; ?>
       <li><a href="#contact" class="nav-link">LIÊN HỆ</a></li>
     </ul>
+    </div>
 
     <div class="navbar-right">
       <div class="search-box">
@@ -63,9 +71,20 @@ $currentUserName = isset($_SESSION['full_name']) ? (string) $_SESSION['full_name
             <i class="fas fa-chevron-down"></i>
           </button>
           <div class="user-menu-dropdown">
-            <a href="<?= htmlspecialchars($u . 'profile.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-id-card"></i> Hồ sơ cá nhân</a>
-            <a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-heart"></i> Tour yêu thích</a>
-            <a href="<?= htmlspecialchars($u . 'my_bookings.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-receipt"></i> Lịch sử đặt tour</a>
+            <?php if ($isAdmin): ?>
+              <a href="<?= htmlspecialchars(app_admin_url('index.php'), ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-tachometer-alt"></i> Bảng điều khiển</a>
+              <a href="<?= htmlspecialchars(app_admin_url('users/list.php'), ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-users"></i> Khách hàng</a>
+              <a href="<?= htmlspecialchars(app_admin_url('staff/list.php'), ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-user-tie"></i> Nhân viên</a>
+              <a href="<?= htmlspecialchars($u . 'profile.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-id-card"></i> Hồ sơ cá nhân</a>
+            <?php elseif ($isStaff): ?>
+              <a href="<?= htmlspecialchars(app_staff_url('index.php'), ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-gauge-high"></i> Khu vực nhân viên</a>
+              <a href="<?= htmlspecialchars(app_staff_url('bookings/list.php'), ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-clipboard-list"></i> Đơn đặt tour</a>
+              <a href="<?= htmlspecialchars(app_staff_url('profile.php'), ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-id-card"></i> Hồ sơ cá nhân</a>
+            <?php else: ?>
+              <a href="<?= htmlspecialchars($u . 'profile.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-id-card"></i> Hồ sơ cá nhân</a>
+              <a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-heart"></i> Tour yêu thích</a>
+              <a href="<?= htmlspecialchars($u . 'my_bookings.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-receipt"></i> Lịch sử đặt tour</a>
+            <?php endif; ?>
             <a href="<?= htmlspecialchars($a . 'logout.php', ENT_QUOTES, 'UTF-8') ?>"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
           </div>
         </div>

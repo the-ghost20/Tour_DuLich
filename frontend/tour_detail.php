@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/tour_itinerary.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -17,7 +18,7 @@ if ($tourId <= 0) {
 }
 
 $stmt = $pdo->prepare(
-    "SELECT id, tour_name, description, destination, duration, price, image_url, available_slots, status
+    "SELECT id, tour_name, description, itinerary, destination, duration, price, image_url, available_slots, status
      FROM tours WHERE id = :id LIMIT 1"
 );
 $stmt->execute(['id' => $tourId]);
@@ -114,6 +115,8 @@ $tourName = htmlspecialchars((string) $tour['tour_name'], ENT_QUOTES, 'UTF-8');
 $destination = htmlspecialchars((string) $tour['destination'], ENT_QUOTES, 'UTF-8');
 $duration = htmlspecialchars((string) $tour['duration'], ENT_QUOTES, 'UTF-8');
 $description = nl2br(htmlspecialchars((string) $tour['description'], ENT_QUOTES, 'UTF-8'));
+$itineraryDays = tour_itinerary_decode($tour['itinerary'] ?? null);
+$descPlain = trim((string) ($tour['description'] ?? ''));
 $priceNum = (float) $tour['price'];
 $priceText = number_format($priceNum, 0, ',', '.') . ' đ';
 $imageUrl = !empty($tour['image_url'])
@@ -132,6 +135,9 @@ $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating
     <title><?= $tourName ?> - Du Lịch Việt</title>
     <link rel="stylesheet" href="../assets/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+      window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
+    </script>
   </head>
   <body>
     <?php
@@ -164,7 +170,24 @@ $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating
         <div class="tour-detail-main">
           <section class="tour-detail-section">
             <h2>Giới thiệu hành trình</h2>
-            <div class="tour-detail-desc"><?= $description ?></div>
+            <?php if ($itineraryDays !== []): ?>
+              <?php if ($descPlain !== ''): ?>
+                <div class="tour-detail-desc tour-detail-lead"><?= $description ?></div>
+              <?php endif; ?>
+              <div class="tour-itinerary" role="list">
+                <?php foreach ($itineraryDays as $d): ?>
+                  <div class="tour-itinerary-day" role="listitem">
+                    <h3 class="tour-itinerary-day-title">
+                      <i class="fas fa-suitcase-rolling" aria-hidden="true"></i>
+                      <?= htmlspecialchars($d['title'], ENT_QUOTES, 'UTF-8') ?>
+                    </h3>
+                    <div class="tour-itinerary-day-body"><?= nl2br(htmlspecialchars($d['body'], ENT_QUOTES, 'UTF-8')) ?></div>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            <?php else: ?>
+              <div class="tour-detail-desc"><?= $description ?></div>
+            <?php endif; ?>
           </section>
 
           <section class="tour-detail-section tour-reviews-block">
@@ -242,9 +265,5 @@ $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating
     <?php require __DIR__ . '/../includes/booking_modal.php'; ?>
 
     <?php require __DIR__ . '/../includes/footer.php'; ?>
-    <script>
-      window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
-    </script>
-    <script src="../assets/js/main.js"></script>
   </body>
 </html>

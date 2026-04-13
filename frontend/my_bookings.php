@@ -31,45 +31,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$row) {
         $flash     = 'Không tìm thấy đơn đặt tour.';
         $flashType = 'error';
-    } elseif ((string) $row['status'] !== 'chờ duyệt') {
-        $flash     = 'Hành động không hợp lệ với trạng thái hiện tại.';
-        $flashType = 'error';
     } elseif ($action === 'pay') {
-        $stmtPay = $pdo->prepare(
-            "UPDATE bookings SET status = 'đã thanh toán' WHERE id = :id AND user_id = :uid"
-        );
-        $stmtPay->execute(['id' => $bookingId, 'uid' => $userId]);
-        $flash = 'Thanh toán thành công! Đơn đặt tour của bạn đã được cập nhật.';
+        if ((string) $row['status'] !== 'chờ duyệt') {
+            $flash     = 'Chỉ có thể thanh toán khi đơn đang chờ duyệt.';
+            $flashType = 'error';
+        } else {
+            $stmtPay = $pdo->prepare(
+                "UPDATE bookings SET status = 'đã thanh toán' WHERE id = :id AND user_id = :uid"
+            );
+            $stmtPay->execute(['id' => $bookingId, 'uid' => $userId]);
+            $flash = 'Thanh toán thành công! Đơn đặt tour của bạn đã được cập nhật.';
+        }
     } elseif ($action === 'cancel') {
         $reason = trim((string) ($_POST['cancel_reason'] ?? ''));
-        if ($reason === '') {
+        $status = (string) $row['status'];
+        $canRequestCancel = in_array($status, ['chờ duyệt', 'đã xác nhận', 'đã thanh toán'], true);
+        if (!$canRequestCancel) {
+            $flash     = 'Đơn ở trạng thái này không thể gửi yêu cầu hủy (đã hủy hoặc đang chờ xử lý hủy).';
+            $flashType = 'error';
+        } elseif ($reason === '') {
             $flash     = 'Vui lòng nhập lý do hủy tour.';
             $flashType = 'error';
         } else {
             $stmtCancel = $pdo->prepare(
                 "UPDATE bookings SET status = 'yêu cầu hủy', cancel_reason = :reason
-                 WHERE id = :id AND user_id = :uid"
+                 WHERE id = :id AND user_id = :uid AND status IN ('chờ duyệt','đã xác nhận','đã thanh toán')"
             );
             $stmtCancel->execute([
                 'reason' => $reason,
                 'id'     => $bookingId,
                 'uid'    => $userId,
             ]);
-            $flash = 'Yêu cầu hủy tour đã được ghi nhận. Chúng tôi sẽ liên hệ bạn sớm.';
+            if ($stmtCancel->rowCount() < 1) {
+                $flash     = 'Không gửi được yêu cầu. Trạng thái đơn có thể đã thay đổi, vui lòng tải lại trang.';
+                $flashType = 'error';
+            } else {
+                $flash = 'Yêu cầu hủy đã được gửi. Bộ phận hỗ trợ sẽ xem xét và liên hệ bạn sớm.';
+            }
         }
+    } else {
+        $flash     = 'Hành động không hợp lệ.';
+        $flashType = 'error';
     }
 
-    // PRG pattern – redirect to avoid re-submit on refresh
-    if ($flashType === 'success') {
-        header('Location: my_bookings.php?msg=' . urlencode($flash));
+    // PRG — lỗi lưu session (tránh URL quá dài nếu lý do hủy dài)
+    if ($flash !== null) {
+        if ($flashType === 'success') {
+            header('Location: my_bookings.php?msg=' . urlencode($flash));
+        } else {
+            $_SESSION['my_bookings_flash_error'] = $flash;
+            header('Location: my_bookings.php');
+        }
         exit;
     }
 }
 
-// Show success message from redirect
+// Flash sau redirect (POST → GET)
 if (isset($_GET['msg'])) {
     $flash     = htmlspecialchars((string) $_GET['msg'], ENT_QUOTES, 'UTF-8');
     $flashType = 'success';
+} elseif (!empty($_SESSION['my_bookings_flash_error'])) {
+    $flash     = htmlspecialchars((string) $_SESSION['my_bookings_flash_error'], ENT_QUOTES, 'UTF-8');
+    $flashType = 'error';
+    unset($_SESSION['my_bookings_flash_error']);
 }
 
 // ── Fetch bookings ────────────────────────────────────────────────────────────
@@ -78,6 +102,8 @@ try {
     $stmt = $pdo->prepare(
         "SELECT b.id, b.adults, b.children, b.total_amount, b.status,
                 b.cancel_reason, b.created_at,
+                b.departure_date, b.coupon_code, b.discount_amount,
+                b.holiday_surcharge_percent, b.holiday_surcharge_amount,
                 t.tour_name, t.destination, t.duration
          FROM bookings b
          INNER JOIN tours t ON t.id = b.tour_id
@@ -273,6 +299,21 @@ function statusMeta(string $status): array {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
+      }
+
+      .booking-footer-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        align-items: stretch;
+      }
+      .booking-footer-stack .action-badge {
+        justify-content: center;
+      }
+      .btn-cancel-open--full {
+        width: 100%;
+        flex: 1 1 auto;
       }
 
       .btn-pay {
@@ -502,6 +543,36 @@ function statusMeta(string $status): array {
                 <span class="label"><i class="fas fa-calendar-check"></i> Ngày đặt</span>
                 <span class="value"><?= $dateStr ?></span>
               </div>
+              <?php
+                $depRaw = $booking['departure_date'] ?? null;
+                $depStr = $depRaw ? date('d/m/Y', strtotime((string) $depRaw)) : '—';
+              ?>
+              <div class="booking-info-row">
+                <span class="label"><i class="fas fa-plane-departure"></i> Ngày khởi hành</span>
+                <span class="value"><?= htmlspecialchars($depStr, ENT_QUOTES, 'UTF-8') ?></span>
+              </div>
+              <?php if (!empty($booking['coupon_code'])): ?>
+              <div class="booking-info-row">
+                <span class="label"><i class="fas fa-ticket-alt"></i> Mã KM</span>
+                <span class="value"><?= htmlspecialchars((string) $booking['coupon_code'], ENT_QUOTES, 'UTF-8') ?></span>
+              </div>
+              <?php endif; ?>
+              <?php if ((float) ($booking['holiday_surcharge_amount'] ?? 0) > 0): ?>
+              <div class="booking-info-row">
+                <span class="label"><i class="fas fa-calendar-day"></i> Phụ thu lễ</span>
+                <span class="value" style="color:#b45309;">+<?= number_format((float) $booking['holiday_surcharge_amount'], 0, ',', '.') ?> đ
+                  <?php if ((int) ($booking['holiday_surcharge_percent'] ?? 0) > 0): ?>
+                    <span class="cell-muted" style="font-size:0.85em">(<?= (int) $booking['holiday_surcharge_percent'] ?>%)</span>
+                  <?php endif; ?>
+                </span>
+              </div>
+              <?php endif; ?>
+              <?php if ((float) ($booking['discount_amount'] ?? 0) > 0): ?>
+              <div class="booking-info-row">
+                <span class="label"><i class="fas fa-percentage"></i> Đã giảm</span>
+                <span class="value" style="color:#15803d;">−<?= number_format((float) $booking['discount_amount'], 0, ',', '.') ?> đ</span>
+              </div>
+              <?php endif; ?>
               <div class="booking-info-row">
                 <span class="label"><i class="fas fa-users"></i> Số lượng</span>
                 <span class="value">
@@ -516,11 +587,12 @@ function statusMeta(string $status): array {
                 <span class="amount"><?= $total ?> đ</span>
               </div>
 
-              <!-- Cancel reason note -->
+              <!-- Lý do khách gửi khi yêu cầu hủy / sau khi hủy -->
               <?php if ($cancelReason !== '' && in_array($status, ['yêu cầu hủy', 'đã hủy'], true)): ?>
                 <div class="cancel-reason-note">
-                  <i class="fas fa-comment-slash"></i>
-                  Lý do hủy: <?= htmlspecialchars($cancelReason, ENT_QUOTES, 'UTF-8') ?>
+                  <i class="fas fa-comment-alt"></i>
+                  <?= $status === 'yêu cầu hủy' ? 'Lý do bạn đã gửi:' : 'Lý do hủy:' ?>
+                  <?= htmlspecialchars($cancelReason, ENT_QUOTES, 'UTF-8') ?>
                 </div>
               <?php endif; ?>
             </div>
@@ -539,18 +611,30 @@ function statusMeta(string $status): array {
                   </button>
                 </form>
 
-                <!-- Cancel button (opens modal) -->
-                <button class="btn-cancel-open"
+                <!-- Gửi yêu cầu hủy (chờ quản trị duyệt) -->
+                <button type="button" class="btn-cancel-open"
                   data-booking-id="<?= $bId ?>"
                   onclick="openCancelModal(<?= $bId ?>)">
-                  <i class="fas fa-ban"></i> Hủy tour
+                  <i class="fas fa-paper-plane"></i> Yêu cầu hủy tour
                 </button>
 
               <?php elseif ($status === 'đã thanh toán'): ?>
-                <div class="action-badge"><i class="fas fa-check-circle" style="color:#2196f3;"></i> Đã thanh toán</div>
+                <div class="booking-footer-stack">
+                  <div class="action-badge"><i class="fas fa-check-circle" style="color:#2196f3;"></i> Đã thanh toán</div>
+                  <button type="button" class="btn-cancel-open btn-cancel-open--full"
+                    onclick="openCancelModal(<?= $bId ?>)">
+                    <i class="fas fa-undo-alt"></i> Yêu cầu hủy &amp; hoàn tiền
+                  </button>
+                </div>
 
               <?php elseif ($status === 'đã xác nhận'): ?>
-                <div class="action-badge"><i class="fas fa-thumbs-up" style="color:#22c55e;"></i> Đã xác nhận bởi hệ thống</div>
+                <div class="booking-footer-stack">
+                  <div class="action-badge"><i class="fas fa-thumbs-up" style="color:#22c55e;"></i> Đã xác nhận bởi hệ thống</div>
+                  <button type="button" class="btn-cancel-open btn-cancel-open--full"
+                    onclick="openCancelModal(<?= $bId ?>)">
+                    <i class="fas fa-paper-plane"></i> Yêu cầu hủy tour
+                  </button>
+                </div>
 
               <?php elseif ($status === 'yêu cầu hủy'): ?>
                 <div class="action-badge"><i class="fas fa-hourglass-half" style="color:#f59e0b;"></i> Đang xử lý yêu cầu hủy</div>
@@ -575,8 +659,8 @@ function statusMeta(string $status): array {
         <button class="cancel-modal-close" onclick="closeCancelModal()" aria-label="Đóng">
           <i class="fas fa-times"></i>
         </button>
-        <h2 id="cancelModalTitle"><i class="fas fa-ban" style="color:#ef4444;margin-right:8px;"></i>Hủy tour</h2>
-        <p class="modal-sub">Vui lòng cho chúng tôi biết lý do bạn muốn hủy chuyến đi này.</p>
+        <h2 id="cancelModalTitle"><i class="fas fa-paper-plane" style="color:#ef4444;margin-right:8px;"></i>Yêu cầu hủy tour</h2>
+        <p class="modal-sub">Nhập lý do hủy. Yêu cầu của bạn được gửi tới quản trị để duyệt; sau khi duyệt trạng thái đơn sẽ cập nhật và chúng tôi sẽ liên hệ bạn (hoàn tiền nếu có sẽ xử lý theo chính sách).</p>
 
         <form method="post" action="" id="cancelForm">
           <input type="hidden" name="action"     value="cancel" />
@@ -591,7 +675,7 @@ function statusMeta(string $status): array {
               Quay lại
             </button>
             <button type="submit" class="btn-confirm-cancel">
-              <i class="fas fa-check"></i> Xác nhận hủy
+              <i class="fas fa-paper-plane"></i> Gửi yêu cầu hủy
             </button>
           </div>
         </form>
