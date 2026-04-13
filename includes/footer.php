@@ -11,16 +11,19 @@ $a = isset($a) ? (string) $a : '../auth/';
       <div class="footer-col">
         <h4>Du Lịch Việt</h4>
         <p>
-          Chúng tôi cam kết mang đến những chuyến đi ý nghĩa và kỳ niệm khó
-          quên cho mọi gia đình Việt.
-        </p>
+    Tour du lịch trong nước & quốc tế chất lượng cao - 
+    hành trình của bạn là niềm tự hào của chúng tôi.
+</p>
+<p>
+    Đồng hành cùng bạn trên mọi hành trình, 
+    từ trong nước đến khắp thế giới.
+</p>  
         <div class="contact-info" id="contact">
           <p>
-            <i class="fas fa-map-marker-alt"></i> 12 Nguyễn Văn Bảo, Gò Vấp,
-            TP HCM
+            <i class="fas fa-map-marker-alt"></i> Số 1, Đường Bạch Đằng , Quận 1, TP. HCM
           </p>
-          <p><i class="fas fa-phone"></i> (+84) 778-118 008</p>
-          <p><i class="fas fa-envelope"></i> thairan2706@gmail.com</p>
+          <p><i class="fas fa-phone"></i> (+84) 909 090 909</p>
+          <p><i class="fas fa-envelope"></i> dulichviet@gmail.com</p>
         </div>
       </div>
       <div class="footer-col">

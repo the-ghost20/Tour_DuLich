@@ -360,37 +360,51 @@ async function loadToursFromApi() {
           return '<i class="far fa-star"></i>';
         }).join("");
 
+        const destLabel = tour.destinationName || tour.destination || "";
         return `
-          <div class="tour-card"
+          <article class="tour-card"
             data-tour-id="${tour.id}"
             data-destination="${tour.destination || ""}"
             data-duration="${durationFilterTag(duration)}"
             data-type="${tour.type || ""}"
             data-rating="${rating}">
             <div class="tour-card-image">
-              <img src="${getTourImageUrl(index)}" alt="${tour.name}" />
-              <div class="tour-card-overlay">
-                <button class="btn-wishlist" title="Thêm vào yêu thích">
-                  <i class="fas fa-heart"></i>
-                </button>
+              <img src="${getTourImageUrl(index)}" alt="${tour.name}" loading="lazy" />
+              <div class="tour-card-image-shine" aria-hidden="true"></div>
+              <div class="tour-card-badges">
+                <span class="tour-chip tour-chip--duration"><i class="fas fa-clock" aria-hidden="true"></i> ${duration}</span>
               </div>
+              <div class="tour-card-overlay">
+                <a href="tour_detail.php?id=${tour.id}" class="tour-card-quick-view">Xem chi tiết</a>
+              </div>
+              <button type="button" class="btn-wishlist btn-wishlist--card" title="Thêm vào yêu thích" aria-label="Thêm vào yêu thích">
+                <i class="fas fa-heart"></i>
+              </button>
             </div>
             <div class="tour-card-content">
-              <h3>${tour.name}</h3>
-              <div class="tour-meta">
-                <span class="tour-duration"><i class="fas fa-calendar"></i> ${duration}</span>
-                <span class="tour-destination"><i class="fas fa-map-marker-alt"></i> ${tour.destinationName || tour.destination}</span>
+              <h3><a href="tour_detail.php?id=${tour.id}" class="tour-title-link">${tour.name}</a></h3>
+              <div class="tour-meta tour-meta--inline">
+                <span class="tour-destination"><i class="fas fa-location-dot" aria-hidden="true"></i> ${destLabel}</span>
               </div>
               <div class="tour-rating">
-                <div class="stars">${stars}</div>
-                <span class="rating-count">(${Math.max(40, Math.round(rating * 30))} đánh giá)</span>
+                <div class="stars" aria-hidden="true">${stars}</div>
+                <span class="rating-count">${rating} · ${Math.max(40, Math.round(rating * 30))} đánh giá</span>
               </div>
               <div class="tour-card-footer">
-                <span class="tour-price">${formatPrice(tour.price)}</span>
-                <button class="btn-book">Đặt Ngay</button>
+                <div class="tour-price-block">
+                  <span class="tour-price-label">Giá từ</span>
+                  <span class="tour-price">${formatPrice(tour.price)}</span>
+                </div>
+                <div class="tour-card-footer-btns">
+                  <a href="tour_detail.php?id=${tour.id}" class="btn-tour-detail">Chi tiết</a>
+                  <button type="button" class="btn-book"
+                    data-tour-id="${tour.id}"
+                    data-tour-name="${String(tour.name).replace(/"/g, "&quot;")}"
+                    data-tour-price="${Number(tour.price) || 0}">Đặt tour</button>
+                </div>
               </div>
             </div>
-          </div>
+          </article>
         `;
       })
       .join("");
@@ -577,7 +591,7 @@ function filterTours() {
       durationMatch &&
       typeMatch &&
       searchMatch;
-    tour.style.display = shouldShow ? "block" : "none";
+    tour.style.display = shouldShow ? "" : "none";
 
     if (shouldShow) {
       visibleCount++;

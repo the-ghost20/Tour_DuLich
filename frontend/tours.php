@@ -77,7 +77,7 @@ function durationFilterTag(string $duration): string
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
-  <body>
+  <body class="tours-page">
     <?php
       $activePage = 'tours';
       require __DIR__ . '/../includes/header.php';
@@ -85,17 +85,30 @@ function durationFilterTag(string $duration): string
 
     <!-- HERO SECTION -->
     <section
-      class="hero-section"
+      class="hero-section tours-hero"
       style="
-        background-image: url(&quot;https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=400&fit=crop&quot;);
+        background-image: url(&quot;https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&h=700&fit=crop&quot;);
       "
     >
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <h1 class="hero-title">Danh Sách Tour</h1>
-        <p class="hero-subtitle">
-          Khám phá những điểm đến tuyệt vời trên khắp Việt Nam
+      <div class="hero-overlay tours-hero-overlay"></div>
+      <div class="hero-content tours-hero-content">
+        <p class="tours-hero-eyebrow">
+          <i class="fas fa-compass"></i> Khám phá Việt Nam
         </p>
+        <h1 class="hero-title tours-hero-title">Tour du lịch</h1>
+        <p class="hero-subtitle tours-hero-subtitle">
+          Chọn hành trình phù hợp — giá minh bạch, đặt nhanh, đồng hành trọn vẹn
+        </p>
+        <div class="tours-hero-stats" aria-label="Thông tin nhanh">
+          <div class="tours-hero-stat">
+            <strong><?= count($tours) ?></strong>
+            <span>Tour đang mở bán</span>
+          </div>
+          <div class="tours-hero-stat">
+            <strong>24/7</strong>
+            <span>Hỗ trợ đặt tour</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -232,20 +245,24 @@ function durationFilterTag(string $duration): string
       <main class="main-content">
         <!-- SORT AND SEARCH -->
         <div class="tours-toolbar">
-          <div class="search-section">
-            <input
-              type="text"
-              id="search-input"
-              placeholder="Tìm tour..."
-              class="search-field"
-            />
-            <button class="btn-search-small">
-              <i class="fas fa-search"></i>
+          <div class="search-section tours-search-section">
+            <div class="tours-search-wrap">
+              <i class="fas fa-search" aria-hidden="true"></i>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Tìm theo tên tour hoặc điểm đến..."
+                class="search-field tours-search-field"
+                autocomplete="off"
+              />
+            </div>
+            <button type="button" class="btn-search-small tours-search-btn" aria-label="Tìm kiếm">
+              <i class="fas fa-arrow-right"></i>
             </button>
           </div>
-          <div class="sort-section">
-            <label for="sort-by">Sắp xếp:</label>
-            <select id="sort-by" class="sort-dropdown">
+          <div class="sort-section tours-sort-section">
+            <label for="sort-by">Sắp xếp</label>
+            <select id="sort-by" class="sort-dropdown tours-sort-dropdown">
               <option value="default">Mặc định</option>
               <option value="price-low">Giá: Thấp đến Cao</option>
               <option value="price-high">Giá: Cao đến Thấp</option>
@@ -274,8 +291,10 @@ function durationFilterTag(string $duration): string
                     ? htmlspecialchars((string) $tour['image_url'], ENT_QUOTES, 'UTF-8')
                     : 'https://images.unsplash.com/photo-1528127269322-539801943592?w=400&h=300&fit=crop';
                 $tourId = (int) $tour['id'];
+                $slots = isset($tour['available_slots']) ? (int) $tour['available_slots'] : 0;
+                $slotsLow = $slots > 0 && $slots <= 12;
               ?>
-              <div
+              <article
                 class="tour-card"
                 data-tour-id="<?= $tourId ?>"
                 data-destination="<?= slugify((string) $tour['destination']) ?>"
@@ -284,41 +303,51 @@ function durationFilterTag(string $duration): string
                 data-rating="4.5"
               >
                 <div class="tour-card-image">
-                  <img src="<?= $imageUrl ?>" alt="<?= $tourName ?>" />
-                  <div class="tour-card-overlay">
-                    <button class="btn-wishlist" title="Thêm vào yêu thích">
-                      <i class="fas fa-heart"></i>
-                    </button>
+                  <img src="<?= $imageUrl ?>" alt="<?= $tourName ?>" loading="lazy" />
+                  <div class="tour-card-image-shine" aria-hidden="true"></div>
+                  <div class="tour-card-badges">
+                    <span class="tour-chip tour-chip--duration"><i class="fas fa-clock" aria-hidden="true"></i> <?= $duration ?></span>
+                    <?php if ($slotsLow): ?>
+                    <span class="tour-chip tour-chip--slots">Còn <?= $slots ?> chỗ</span>
+                    <?php endif; ?>
                   </div>
+                  <div class="tour-card-overlay">
+                    <a href="tour_detail.php?id=<?= $tourId ?>" class="tour-card-quick-view">Xem chi tiết</a>
+                  </div>
+                  <button type="button" class="btn-wishlist btn-wishlist--card" title="Thêm vào yêu thích" aria-label="Thêm vào yêu thích">
+                    <i class="fas fa-heart"></i>
+                  </button>
                 </div>
                 <div class="tour-card-content">
                   <h3><a href="tour_detail.php?id=<?= $tourId ?>" class="tour-title-link"><?= $tourName ?></a></h3>
-                  <div class="tour-meta">
-                    <span class="tour-duration"><i class="fas fa-calendar"></i> <?= $duration ?></span>
-                    <span class="tour-destination"><i class="fas fa-map-marker-alt"></i> <?= $destination ?></span>
+                  <div class="tour-meta tour-meta--inline">
+                    <span class="tour-destination"><i class="fas fa-location-dot" aria-hidden="true"></i> <?= $destination ?></span>
                   </div>
                   <div class="tour-rating">
-                    <div class="stars">
+                    <div class="stars" aria-hidden="true">
                       <i class="fas fa-star"></i>
                       <i class="fas fa-star"></i>
                       <i class="fas fa-star"></i>
                       <i class="fas fa-star"></i>
                       <i class="fas fa-star-half-alt"></i>
                     </div>
-                    <span class="rating-count">(120 đánh giá)</span>
+                    <span class="rating-count">4.5 · 120 đánh giá</span>
                   </div>
                   <div class="tour-card-footer">
-                    <span class="tour-price"><?= $priceText ?></span>
+                    <div class="tour-price-block">
+                      <span class="tour-price-label">Giá từ</span>
+                      <span class="tour-price"><?= $priceText ?></span>
+                    </div>
                     <div class="tour-card-footer-btns">
                       <a href="tour_detail.php?id=<?= $tourId ?>" class="btn-tour-detail">Chi tiết</a>
                       <button class="btn-book" type="button"
                         data-tour-id="<?= $tourId ?>"
                         data-tour-name="<?= $tourName ?>"
-                        data-tour-price="<?= (float) $tour['price'] ?>">Đặt Ngay</button>
+                        data-tour-price="<?= (float) $tour['price'] ?>">Đặt tour</button>
                     </div>
                   </div>
                 </div>
-              </div>
+              </article>
             <?php endforeach; ?>
           <?php endif; ?>
         </div>
@@ -348,6 +377,6 @@ function durationFilterTag(string $duration): string
       // Truyền trạng thái đăng nhập từ PHP session xuống JS
       window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
     </script>
-    <script src="../assets/js/main.js?v=9"></script>
+    <script src="../assets/js/main.js?v=10"></script>
   </body>
 </html>
