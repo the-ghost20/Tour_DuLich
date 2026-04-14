@@ -144,10 +144,10 @@
     .bk-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
     .bk-icon {
       width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0;
-      background: linear-gradient(135deg, #1a73e8, #00bcd4);
+      background: linear-gradient(135deg, #ef5350, #e53935);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 1.3rem;
-      box-shadow: 0 8px 20px rgba(33,150,243,0.3);
+      box-shadow: 0 8px 20px rgba(229, 57, 53, 0.35);
     }
     .bk-title { margin: 0 0 3px; font-size: 1.4rem; font-weight: 800; color: #0f2552; }
     .bk-subtitle { margin: 0; font-size: 0.88rem; color: #6b7fa0; }
@@ -158,7 +158,7 @@
       margin-bottom: 18px; border: 1px solid #dce8f8;
     }
     .bk-price-label { color: #7088b5; font-size: 0.88rem; font-weight: 500; }
-    .bk-price-val { color: #1a73e8; font-weight: 800; font-size: 1.05rem; }
+    .bk-price-val { color: #e53935; font-weight: 800; font-size: 1.08rem; }
     .bk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
     .bk-field-full { margin-bottom: 14px; }
     .bk-input-date {
@@ -226,13 +226,13 @@
     .bk-actions { display: flex; gap: 10px; justify-content: flex-end; }
     .bk-btn-submit {
       padding: 12px 22px; border: none; border-radius: 12px;
-      background: linear-gradient(135deg, #1a73e8, #00bcd4);
-      color: #fff; font-weight: 700; font-size: 0.93rem;
+      background: linear-gradient(180deg, #ef5350, #e53935);
+      color: #fff; font-weight: 800; font-size: 0.95rem;
       cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
-      box-shadow: 0 6px 18px rgba(33,150,243,0.3);
+      box-shadow: 0 6px 18px rgba(229, 57, 53, 0.35);
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .bk-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(33,150,243,0.38); }
+    .bk-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(229, 57, 53, 0.42); }
     .bk-btn-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
     .bk-btn-cancel {
       padding: 12px 18px; border: 1.5px solid #d0dbf0; border-radius: 12px;

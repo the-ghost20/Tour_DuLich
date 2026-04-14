@@ -78,6 +78,9 @@ require dirname(__DIR__, 2) . '/includes/staff_header.php';
                 <td class="cell-muted"><?= $p['published_at'] ? h($p['published_at']) : '—' ?></td>
                 <td><?= h($p['author_name'] ?? '—') ?></td>
                 <td class="cell-right">
+                  <?php if ((string) ($p['status'] ?? '') === 'published'): ?>
+                    <a href="<?= h(app_url('frontend/blog_detail.php?slug=' . rawurlencode((string) $p['slug']))) ?>" class="btn btn-ghost btn-sm btn-icon" title="Xem bài"><i class="fas fa-eye"></i></a>
+                  <?php endif; ?>
                   <a href="edit.php?id=<?= (int) $p['id'] ?>" class="btn btn-ghost btn-sm btn-icon"><i class="fas fa-pen"></i></a>
                 </td>
               </tr>

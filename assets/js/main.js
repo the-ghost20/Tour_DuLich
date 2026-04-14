@@ -54,7 +54,341 @@ document.addEventListener("DOMContentLoaded", () => {
   _bkSetupModalEvents();
   initToursUrlSearch();
   initWishlistPage();
+  initTourDetailGallery();
+  initTourDepartureCalendar();
 });
+
+function initTourDetailGallery() {
+  const root = document.querySelector("[data-td-gallery]");
+  const mainWrap = document.querySelector(".td-gallery-main");
+  const mainImg = mainWrap?.querySelector("img");
+  const lb = document.getElementById("td-lightbox");
+  if (!root || !mainImg || !mainWrap || !lb) return;
+
+  let items = [];
+  try {
+    const raw =
+      root.dataset.galleryItems ||
+      root.getAttribute("data-gallery-items") ||
+      "[]";
+    items = JSON.parse(raw);
+  } catch {
+    items = [];
+  }
+  if (!Array.isArray(items) || items.length === 0) return;
+
+  const thumbs = root.querySelectorAll(".td-gallery-thumb");
+  const lbImg = lb.querySelector(".td-lightbox-img");
+  const lbThumbs = lb.querySelector("[data-td-lb-thumbs]");
+  const lbCount = lb.querySelector("[data-td-lb-count]");
+  const btnPrev = lb.querySelector(".td-lightbox-prev");
+  const btnNext = lb.querySelector(".td-lightbox-next");
+  const btnFs = lb.querySelector(".td-lightbox-fs");
+  let currentIdx = 0;
+  let prevFocus = null;
+
+  function getActiveIndex() {
+    let i = 0;
+    thumbs.forEach((btn, idx) => {
+      if (btn.classList.contains("is-active")) i = idx;
+    });
+    return i;
+  }
+
+  function setPageMainAt(index) {
+    const it = items[index];
+    if (!it?.full) return;
+    mainImg.src = it.full;
+    thumbs.forEach((b, idx) => {
+      b.classList.toggle("is-active", idx === index);
+      b.setAttribute("aria-current", idx === index ? "true" : "false");
+    });
+  }
+
+  function buildLbThumbs() {
+    if (!lbThumbs) return;
+    lbThumbs.innerHTML = "";
+    items.forEach((it, idx) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "td-lb-thumb" + (idx === currentIdx ? " is-active" : "");
+      b.setAttribute("aria-label", `Ảnh ${idx + 1}`);
+      const im = document.createElement("img");
+      im.src = it.thumb || it.full;
+      im.alt = "";
+      im.loading = "lazy";
+      b.appendChild(im);
+      b.addEventListener("click", () => goTo(idx));
+      lbThumbs.appendChild(b);
+    });
+    if (lbCount) lbCount.textContent = String(items.length);
+  }
+
+  function updateLbThumbActive() {
+    if (!lbThumbs) return;
+    lbThumbs.querySelectorAll(".td-lb-thumb").forEach((b, idx) => {
+      b.classList.toggle("is-active", idx === currentIdx);
+    });
+    const active = lbThumbs.children[currentIdx];
+    active?.scrollIntoView?.({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }
+
+  function goTo(index) {
+    const n = items.length;
+    if (n === 0) return;
+    currentIdx = ((index % n) + n) % n;
+    const it = items[currentIdx];
+    if (lbImg) {
+      lbImg.src = it.full;
+      lbImg.alt = `Ảnh ${currentIdx + 1}`;
+    }
+    if (btnFs) btnFs.href = it.full;
+    updateLbThumbActive();
+    setPageMainAt(currentIdx);
+  }
+
+  function openLb(index) {
+    currentIdx = Math.max(0, Math.min(index, items.length - 1));
+    buildLbThumbs();
+    goTo(currentIdx);
+    prevFocus = document.activeElement;
+    lb.hidden = false;
+    lb.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    lb.querySelector(".td-lightbox-close")?.focus();
+  }
+
+  function closeLb() {
+    lb.hidden = true;
+    lb.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    if (prevFocus && typeof prevFocus.focus === "function") prevFocus.focus();
+    prevFocus = null;
+  }
+
+  thumbs.forEach((btn, idx) => {
+    btn.addEventListener("click", () => {
+      const full = btn.getAttribute("data-full");
+      if (full) mainImg.src = full;
+      thumbs.forEach((b, j) => {
+        b.classList.toggle("is-active", j === idx);
+        b.setAttribute("aria-current", j === idx ? "true" : "false");
+      });
+    });
+  });
+
+  mainWrap.addEventListener("click", () => openLb(getActiveIndex()));
+  mainWrap.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openLb(getActiveIndex());
+    }
+  });
+
+  if (items.length <= 1) {
+    if (btnPrev) btnPrev.style.display = "none";
+    if (btnNext) btnNext.style.display = "none";
+  } else {
+    btnPrev?.addEventListener("click", () => goTo(currentIdx - 1));
+    btnNext?.addEventListener("click", () => goTo(currentIdx + 1));
+  }
+
+  lb.querySelectorAll("[data-td-lb-close]").forEach((el) => {
+    el.addEventListener("click", closeLb);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (lb.hidden) return;
+    if (e.key === "Escape") {
+      closeLb();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      goTo(currentIdx - 1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      goTo(currentIdx + 1);
+    }
+  });
+}
+
+function initTourDepartureCalendar() {
+  const root = document.getElementById("td-departure-root");
+  if (!root) return;
+  let departures = [];
+  try {
+    departures = JSON.parse(root.getAttribute("data-td-departures") || "[]");
+  } catch {
+    departures = [];
+  }
+  if (!Array.isArray(departures) || departures.length === 0) return;
+
+  const byDate = new Map();
+  const monthKeys = new Set();
+  for (const row of departures) {
+    const d = row && row.date ? String(row.date) : "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+    byDate.set(d, {
+      price: Number(row.price) || 0,
+      promo: Boolean(row.promo),
+    });
+    monthKeys.add(d.slice(0, 7));
+  }
+  const monthsSorted = Array.from(monthKeys).sort();
+
+  const monthsEl = root.querySelector("[data-td-cal-months]");
+  const titleEl = root.querySelector("[data-td-cal-title]");
+  const gridEl = root.querySelector("[data-td-cal-grid]");
+  const btnPrev = root.querySelector("[data-td-cal-prev]");
+  const btnNext = root.querySelector("[data-td-cal-next]");
+  const pickedInput = document.getElementById("td-picked-departure");
+  if (!monthsEl || !titleEl || !gridEl) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayIso = _bkTodayIso();
+
+  let viewYm = monthsSorted[0] || todayIso.slice(0, 7);
+  let selectedIso = "";
+
+  function parseYm(ym) {
+    const [y, m] = ym.split("-").map((x) => parseInt(x, 10));
+    return { y, m };
+  }
+
+  function fmtMonthTitle(ym) {
+    const { y, m } = parseYm(ym);
+    return `THÁNG ${m}/${y}`;
+  }
+
+  function fmtPriceK(price) {
+    const n = Math.round(Number(price) || 0);
+    if (n <= 0) return "";
+    const k = Math.round(n / 1000);
+    return k.toLocaleString("vi-VN") + "K";
+  }
+
+  function renderMonthSidebar() {
+    monthsEl.innerHTML = "";
+    monthsSorted.forEach((ym) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "td-cal-month-btn" + (ym === viewYm ? " is-active" : "");
+      const { y, m } = parseYm(ym);
+      b.textContent = `${m}/${y}`;
+      b.addEventListener("click", () => {
+        viewYm = ym;
+        renderMonthSidebar();
+        renderGrid();
+      });
+      monthsEl.appendChild(b);
+    });
+  }
+
+  function renderGrid() {
+    titleEl.textContent = fmtMonthTitle(viewYm);
+    const { y, m } = parseYm(viewYm);
+    const first = new Date(y, m - 1, 1);
+    const startPad = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const prevMonthDays = new Date(y, m - 1, 0).getDate();
+
+    gridEl.innerHTML = "";
+    const totalCells = Math.ceil((startPad + daysInMonth) / 7) * 7;
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - startPad + 1;
+      const cell = document.createElement("div");
+      cell.className = "td-cal-cell";
+
+      if (dayNum < 1) {
+        cell.classList.add("td-cal-cell--muted", "td-cal-cell--pad");
+        const n = prevMonthDays + dayNum;
+        cell.innerHTML = `<span class="td-cal-daynum">${n}</span>`;
+      } else if (dayNum > daysInMonth) {
+        cell.classList.add("td-cal-cell--muted", "td-cal-cell--pad");
+        cell.innerHTML = `<span class="td-cal-daynum">${dayNum - daysInMonth}</span>`;
+      } else {
+        const iso = `${y}-${String(m).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
+        const dt = new Date(y, m - 1, dayNum);
+        dt.setHours(0, 0, 0, 0);
+        const isPast = dt < today;
+        const info = byDate.get(iso);
+
+        cell.innerHTML = `<span class="td-cal-daynum">${dayNum}</span>`;
+        if (isPast) {
+          cell.classList.add("td-cal-cell--past");
+        }
+        if (info && !isPast) {
+          cell.classList.add("td-cal-cell--tour");
+          const gift =
+            info.promo ?
+              '<i class="fas fa-gift td-cal-gift" aria-hidden="true"></i>'
+            : "";
+          const pk = fmtPriceK(info.price);
+          cell.innerHTML += `${gift}<span class="td-cal-price">${pk}</span>`;
+          cell.setAttribute("role", "button");
+          cell.tabIndex = 0;
+          cell.setAttribute("aria-label", `Chọn ngày khởi hành ${iso}`);
+          if (selectedIso === iso) {
+            cell.classList.add("td-cal-cell--picked");
+          }
+          const pick = () => {
+            selectedIso = iso;
+            if (pickedInput) pickedInput.value = iso;
+            renderGrid();
+          };
+          cell.addEventListener("click", pick);
+          cell.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter" || ev.key === " ") {
+              ev.preventDefault();
+              pick();
+            }
+          });
+        } else if (info && isPast) {
+          cell.classList.add("td-cal-cell--past");
+        }
+      }
+      gridEl.appendChild(cell);
+    }
+  }
+
+  function monthIndex() {
+    let i = monthsSorted.indexOf(viewYm);
+    if (i < 0) i = 0;
+    return i;
+  }
+
+  btnPrev?.addEventListener("click", () => {
+    const i = monthIndex();
+    if (i > 0) {
+      viewYm = monthsSorted[i - 1];
+      renderMonthSidebar();
+      renderGrid();
+    }
+  });
+  btnNext?.addEventListener("click", () => {
+    const i = monthIndex();
+    if (i < monthsSorted.length - 1) {
+      viewYm = monthsSorted[i + 1];
+      renderMonthSidebar();
+      renderGrid();
+    }
+  });
+
+  const future = departures.map((r) => r.date).filter((d) => d >= todayIso);
+  if (future.length) {
+    selectedIso = future.sort()[0];
+    if (pickedInput) pickedInput.value = selectedIso;
+    viewYm = selectedIso.slice(0, 7);
+  }
+
+  renderMonthSidebar();
+  renderGrid();
+}
 
 async function bootstrapDataFromBackend() {
   await Promise.all([loadToursFromApi(), loadHotToursFromApi()]);
@@ -947,7 +1281,9 @@ function openBookingModal(tourId, tourName, tourPrice) {
   if (dep) {
     const t = _bkTodayIso();
     dep.min = t;
-    dep.value = t;
+    const picked = document.getElementById("td-picked-departure");
+    const pv = picked && picked.value ? String(picked.value).trim() : "";
+    dep.value = pv && pv >= t ? pv : t;
   }
   const couponInp = document.getElementById("bk-coupon");
   if (couponInp) couponInp.value = "";

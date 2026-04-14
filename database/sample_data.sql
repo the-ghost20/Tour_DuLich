@@ -2,7 +2,7 @@
 -- Dữ liệu mẫu — chạy SAU database/tour_management.sql (database tour_dulich trống)
 -- mysql -u root -p tour_dulich < database/sample_data.sql
 --
--- Tài khoản mẫu (mật khẩu giống nhau): password
+-- Tài khoản mẫu (mật khẩu giống nhau):     
 --   admin@dulichviet.test   — admin
 --   staff@dulichviet.test   — staff
 --   user1@dulichviet.test … user4@dulichviet.test — khách
@@ -202,19 +202,20 @@ INSERT INTO `coupons` (`id`, `code`, `discount_type`, `discount_value`, `min_ord
 (1, 'SUMMER10', 'percent', 10.00, 2000000.00, 100, 0, '2026-01-01', '2026-12-31', 1),
 (2, 'GIAM500K', 'fixed', 500000.00, 5000000.00, 50, 0, '2026-03-01', NULL, 1);
 
-INSERT INTO `blog_posts` (`id`, `title`, `slug`, `excerpt`, `body`, `status`, `published_at`, `author_id`) VALUES
-(1,
- 'Mẹo săn tour giá tốt mùa cao điểm',
- 'meo-san-tour-gia-tot',
- 'Chọn thời điểm đặt, so sánh gói và tận dụng mã giảm giá.',
- '<p>Nội dung mẫu: đặt sớm 2–3 tuần, theo dõi khuyến mãi cuối tuần, kết hợp mã giảm giá hợp lệ.</p>',
- 'published', '2026-02-01 09:00:00', 1),
-(2,
- 'Checklist hành lý đi biển 3 ngày',
- 'checklist-hanh-ly-bien',
- 'Gọn nhẹ mà đủ dùng cho chuyến nghỉ dưỡng.',
- '<p>Nội dung mẫu: kem chống nắng, dép, sạc dự phòng, giấy tờ photo.</p>',
- 'draft', NULL, 1);
+-- Bài blog (cần cột featured_image, category, tag_label, keywords — xem migrations/004 hoặc mở web để auto-migrate)
+INSERT INTO `blog_posts` (`id`, `title`, `slug`, `excerpt`, `featured_image`, `category`, `tag_label`, `keywords`, `body`, `status`, `published_at`, `author_id`) VALUES
+ (1, 'Kinh nghiệm du lịch Đà Lạt 3 ngày 2 đêm chi tiết từ A-Z', 'dalat-kinh-nghiem', 'Lịch trình thực tế, chi phí dự kiến, địa điểm check-in đẹp và gợi ý ăn uống.', 'https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1400&q=80', 'cam-nang', 'Cẩm nang/Kinh nghiệm du lịch', 'đà lạt lịch trình 3 ngày trekking', '<p>Đà Lạt luôn là điểm đến được yêu thích nhờ khí hậu mát lành.</p><h3>Ngày 1</h3><p>Chiều đến nên ưu tiên nghỉ ngơi nhẹ, dạo Hồ Xuân Hương hoặc chợ đêm.</p><h3>Ngày 2</h3><p>Ghé Datanla, đồi chè Cầu Đất hoặc săn mây tùy mùa.</p><h3>Ngày 3</h3><p>Mua mứt, atiso, cà phê làm quà rồi trả phòng.</p>', 'published', '2026-04-08 10:00:00', 1),
+ (2, 'Đi Sapa mùa nào đẹp nhất? Gợi ý theo từng tháng', 'sapa-mua-nao-dep', 'So sánh thời tiết, cảnh sắc và chi phí theo mùa để chọn thời điểm phù hợp.', 'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=900&q=80', 'cam-nang', 'Cẩm nang/Kinh nghiệm du lịch', 'sapa fansipan mùa lúa', '<p>Sapa thay đổi theo mùa: mùa lúa chín vàng thu hút đông đảo du khách.</p><h3>Mùa xuân</h3><p>Hoa đào, hoa mận nở rộ — phù hợp trekking nhẹ.</p><h3>Mùa thu</h3><p>Lúa chín khoảng tháng 9–10 là thời điểm vàng cho ảnh.</p>', 'published', '2026-04-05 14:00:00', 1),
+ (3, 'Review resort ven biển Phú Quốc: Có đáng tiền?', 'review-phu-quoc-resort', 'Trải nghiệm thực tế phòng ở, bữa sáng, bãi biển riêng và lưu ý khi đặt phòng.', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=80', 'review', 'Review & Đánh giá', 'phú quốc resort bãi kem', '<p>Resort ven biển thường có bãi riêng và đưa đón — phù hợp gia đình.</p><p>Khi đặt phòng, xem kỹ chính sách bữa sáng và hoạt động cho trẻ.</p>', 'published', '2026-04-03 09:30:00', 1),
+ (4, 'Lịch trình Đà Nẵng - Hội An 4 ngày 3 đêm tối ưu chi phí', 'lich-trinh-da-nang-hoi-an-4n3d', 'Giờ đi, điểm tham quan, phương tiện và ngân sách theo từng ngày.', 'https://images.unsplash.com/photo-1555899434-94d1368aa7af?auto=format&fit=crop&w=900&q=80', 'cam-nang', 'Cẩm nang/Kinh nghiệm du lịch', 'đà nẵng hội an cầu rồng', '<p>Ngày 1: Bán đảo Sơn Trà và bãi biển Mỹ Khê. Ngày 2–3: Phố cổ Hội An và làng gốm Thanh Hà.</p><p>Tối ưu chi phí bằng combo vé tham quan và xe máy.</p>', 'published', '2026-04-04 11:00:00', 1),
+ (5, 'Review 5 quán hải sản Nha Trang ngon, giá hợp lý', 'review-hai-san-nha-trang', 'Thực đơn, mức giá và trải nghiệm phục vụ thực tế.', 'https://images.unsplash.com/photo-1559847844-d721426d6edc?auto=format&fit=crop&w=900&q=80', 'review', 'Review & Đánh giá', 'nha trang hải sản tôm hùm', '<p>Chọn quán có bể chứa hải sản tươi, hỏi giá trước khi chế biến.</p><p>Nên đi nhóm để chia món và giảm chi phí/người.</p>', 'published', '2026-03-31 16:00:00', 1),
+ (6, 'Top món đặc sản Huế nhất định phải thử trong 2 ngày', 'top-mon-dac-san-hue', 'Danh sách quán, mức giá tham khảo và lịch ăn uống hợp lý.', 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80', 'am-thuc', 'Văn hóa & Ẩm thực', 'huế bún bò bánh bèo', '<p>Bún bò, bánh bèo, nem lụi và chè là combo dễ ăn trong 48 giờ.</p><p>Ưu tiên quán địa phương đông khách thay vì khu du lịch đông đúc.</p>', 'published', '2026-04-01 08:00:00', 1),
+ (7, 'Mẹo săn tour giá tốt mùa cao điểm', 'meo-san-tour-gia-tot', 'Chọn thời điểm đặt, so sánh gói và tận dụng mã giảm giá.', 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=80', 'tin-tuc', 'Tin tức & Khuyến mãi', 'flash sale tour giảm giá', '<p>Đặt sớm 2–3 tuần, theo dõi khuyến mãi cuối tuần và kết hợp mã giảm giá hợp lệ.</p><p>So sánh gói tour trước khi chốt để tránh phát sinh.</p>', 'published', '2026-02-01 09:00:00', 1),
+ (8, 'Checklist hành lý đi biển 3 ngày', 'checklist-hanh-ly-bien', 'Gọn nhẹ mà đủ dùng cho chuyến nghỉ dưỡng.', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80', 'cam-nang', 'Cẩm nang/Kinh nghiệm du lịch', 'biển vali kem chống nắng', '<p>Kem chống nắng, dép, sạc dự phòng, bản photo giấy tờ.</p><p>Áo khoác gió nhẹ cho tối ven biển.</p>', 'published', '2026-03-20 12:00:00', 1),
+ (9, 'Cập nhật quy định du lịch nội địa và lịch bay hè 2026', 'cap-nhat-quy-dinh-du-lich-2026', 'Thay đổi về giấy tờ, hành lý và lịch bay cao điểm.', 'https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=900&q=80', 'tin-tuc', 'Tin tức & Khuyến mãi', 'vé máy bay đà nẵng hành lý', '<p>Theo dõi quy định hành lý từng hãng bay và thời gian làm thủ tục dịp lễ.</p>', 'published', '2026-03-29 10:00:00', 1),
+ (10, 'Gia đình chị Hạnh chia sẻ hành trình Ninh Bình 2N1Đ', 'gia-dinh-ninh-binh-2n1d', 'Cảm nhận về lịch trình, xe, bữa ăn và hướng dẫn viên.', 'https://images.unsplash.com/photo-1527004013197-933c4bb611b3?auto=format&fit=crop&w=900&q=80', 'testimonials', 'Câu chuyện khách hàng', 'ninh bình tràng an bái đính', '<p>Chuyến đi phù hợp gia đình có người lớn tuổi và trẻ nhỏ.</p><p>Lịch trình không quá dày, có thời gian nghỉ trưa hợp lý.</p>', 'published', '2026-03-28 15:00:00', 1),
+ (11, 'Food tour phố cổ Hà Nội: ăn gì trong một buổi tối?', 'food-tour-pho-co-ha-noi', 'Bún chả, phở cuốn, chè — khung giờ và mức giá tham khảo.', 'https://images.unsplash.com/photo-1529692236671-f1dc2a44bf24?auto=format&fit=crop&w=900&q=80', 'am-thuc', 'Văn hóa & Ẩm thực', 'hà nội phố cổ bún chả', '<p>Bắt đầu từ khu phố cổ, đi bộ giữa các quán nhỏ.</p><p>Chia nhỏ khẩu phần để thử được nhiều món.</p>', 'published', '2026-03-27 18:00:00', 1),
+ (12, 'Ưu đãi tour Hà Giang tháng 5: giảm nhóm và quà tặng kèm', 'uu-dai-tour-ha-giang-thang-5', 'Khung ngày ưu đãi, chính sách nhóm và combo lưu trú.', 'https://images.unsplash.com/photo-1464822759844-d150ad6d1d1b?auto=format&fit=crop&w=900&q=80', 'tin-tuc', 'Tin tức & Khuyến mãi', 'hà giang cao nguyên đá khuyến mãi', '<p>Áp dụng cho nhóm từ 6 khách trở lên trong khung ngày công bố trên web.</p>', 'published', '2026-03-26 09:00:00', 1);
 
 -- Reset AUTO_INCREMENT (tuỳ chọn)
 ALTER TABLE `categories` AUTO_INCREMENT = 10;
@@ -224,4 +225,4 @@ ALTER TABLE `bookings` AUTO_INCREMENT = 50;
 ALTER TABLE `tour_reviews` AUTO_INCREMENT = 100;
 ALTER TABLE `blog_feedback` AUTO_INCREMENT = 50;
 ALTER TABLE `coupons` AUTO_INCREMENT = 10;
-ALTER TABLE `blog_posts` AUTO_INCREMENT = 10;
+ALTER TABLE `blog_posts` AUTO_INCREMENT = 20;

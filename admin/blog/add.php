@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/includes/db.php';
+require_once dirname(__DIR__, 2) . '/includes/blog_helpers.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -21,6 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stat  = (string) ($_POST['status'] ?? 'draft');
     $pub   = trim((string) ($_POST['published_at'] ?? ''));
     $aid   = (int) $_SESSION['user_id'];
+    $feat  = trim((string) ($_POST['featured_image'] ?? ''));
+    $cat   = blog_normalize_category($_POST['category'] ?? null);
+    $tagL  = trim((string) ($_POST['tag_label'] ?? ''));
+    $kw    = trim((string) ($_POST['keywords'] ?? ''));
 
     if ($title === '') {
         $err = 'Nhập tiêu đề.';
@@ -44,16 +49,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         try {
             $pdo->prepare(
-                'INSERT INTO blog_posts (title, slug, excerpt, body, status, published_at, author_id)
-                 VALUES (:t,:s,:e,:b,:st,:p,:a)'
+                'INSERT INTO blog_posts (title, slug, excerpt, featured_image, category, tag_label, keywords, body, status, published_at, author_id)
+                 VALUES (:t,:s,:e,:fi,:cat,:tl,:kw,:b,:st,:p,:a)'
             )->execute([
-                't'  => $title,
-                's'  => $slug,
-                'e'  => $ex === '' ? null : $ex,
-                'b'  => $body,
-                'st' => $stat,
-                'p'  => $pubAt,
-                'a'  => $aid,
+                't'    => $title,
+                's'    => $slug,
+                'e'    => $ex === '' ? null : $ex,
+                'fi'   => $feat === '' ? null : $feat,
+                'cat'  => $cat,
+                'tl'   => $tagL === '' ? null : $tagL,
+                'kw'   => $kw === '' ? null : $kw,
+                'b'    => $body,
+                'st'   => $stat,
+                'p'    => $pubAt,
+                'a'    => $aid,
             ]);
             header('Location: list.php', true, 302);
             exit;
@@ -91,6 +100,31 @@ require dirname(__DIR__, 2) . '/includes/admin_header.php';
     <div>
       <label class="cell-muted" style="font-size:0.8rem">Tóm tắt</label>
       <input class="form-control" name="excerpt" value="<?= h((string) ($_POST['excerpt'] ?? '')) ?>" />
+    </div>
+    <div>
+      <label class="cell-muted" style="font-size:0.8rem">Ảnh đại diện (URL)</label>
+      <input class="form-control" name="featured_image" value="<?= h((string) ($_POST['featured_image'] ?? '')) ?>" placeholder="https://images.unsplash.com/..." />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label class="cell-muted" style="font-size:0.8rem">Chuyên mục (lọc)</label>
+        <?php $pcat = (string) ($_POST['category'] ?? 'cam-nang'); ?>
+        <select class="form-control" name="category">
+          <option value="cam-nang" <?= $pcat === 'cam-nang' ? 'selected' : '' ?>>Cẩm nang</option>
+          <option value="review" <?= $pcat === 'review' ? 'selected' : '' ?>>Review</option>
+          <option value="am-thuc" <?= $pcat === 'am-thuc' ? 'selected' : '' ?>>Ẩm thực & Văn hóa</option>
+          <option value="tin-tuc" <?= $pcat === 'tin-tuc' ? 'selected' : '' ?>>Tin & Khuyến mãi</option>
+          <option value="testimonials" <?= $pcat === 'testimonials' ? 'selected' : '' ?>>Câu chuyện KH</option>
+        </select>
+      </div>
+      <div>
+        <label class="cell-muted" style="font-size:0.8rem">Nhãn hiển thị</label>
+        <input class="form-control" name="tag_label" value="<?= h((string) ($_POST['tag_label'] ?? '')) ?>" placeholder="VD: Cẩm nang/Kinh nghiệm" />
+      </div>
+    </div>
+    <div>
+      <label class="cell-muted" style="font-size:0.8rem">Từ khóa tìm kiếm (tuỳ chọn)</label>
+      <input class="form-control" name="keywords" value="<?= h((string) ($_POST['keywords'] ?? '')) ?>" placeholder="đà lạt, trekking, ..." />
     </div>
     <div>
       <label class="cell-muted" style="font-size:0.8rem">Nội dung (HTML)</label>

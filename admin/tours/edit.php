@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/tour_itinerary.php';
+require_once __DIR__ . '/../../includes/tour_content_helpers.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -38,6 +39,10 @@ if ($row && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $dest  = trim((string) ($_POST['destination'] ?? ''));
     $dur   = trim((string) ($_POST['duration'] ?? ''));
     $desc  = (string) ($_POST['description'] ?? '');
+    $journeyIntro = (string) ($_POST['journey_intro'] ?? '');
+    $highlightsPlain = (string) ($_POST['highlights_plain'] ?? '');
+    $departurePlain = (string) ($_POST['departure_schedule_plain'] ?? '');
+    $galleryUrlsPlain = (string) ($_POST['gallery_urls_plain'] ?? '');
     $itPlain = (string) ($_POST['itinerary_plain'] ?? '');
     $itJson = tour_itinerary_from_plaintext($itPlain);
     $price = (float) ($_POST['price'] ?? 0);
@@ -55,27 +60,39 @@ if ($row && $_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($price < 0) {
         $err = 'Giá không hợp lệ.';
     } else {
+        $hiJson = tour_highlights_from_textarea($highlightsPlain);
+        $depJson = tour_departures_to_storage($departurePlain, $price);
+        $galJson = tour_gallery_urls_from_textarea($galleryUrlsPlain);
+        if (trim($departurePlain) !== '' && $depJson === null) {
+            $err = 'Lịch khởi hành không hợp lệ. Mỗi dòng: YYYY-MM-DD hoặc YYYY-MM-DD giá promo';
+        } else {
         try {
             $pdo->prepare(
-                "UPDATE tours SET category_id=:c, tour_name=:n, description=:d, itinerary=:it, destination=:de, duration=:du,
-                 price=:p, image_url=:i, available_slots=:s, status=:st WHERE id=:id"
+                "UPDATE tours SET category_id=:c, tour_name=:n, description=:d, journey_intro=:ji, highlights=:hi,
+                 departure_schedule=:dep, itinerary=:it, destination=:de, duration=:du,
+                 price=:p, image_url=:i, gallery_urls=:gal, available_slots=:s, status=:st WHERE id=:id"
             )->execute([
-                'c'  => $catId,
-                'n'  => $name,
-                'd'  => $desc === '' ? null : $desc,
-                'it' => $itJson,
-                'de' => $dest,
-                'du' => $dur,
-                'p'  => $price,
-                'i'  => $img === '' ? null : $img,
-                's'  => $slots,
-                'st' => $st,
-                'id' => $id,
+                'c'   => $catId,
+                'n'   => $name,
+                'd'   => $desc === '' ? null : $desc,
+                'ji'  => trim($journeyIntro) === '' ? null : $journeyIntro,
+                'hi'  => $hiJson,
+                'dep' => $depJson,
+                'it'  => $itJson,
+                'de'  => $dest,
+                'du'  => $dur,
+                'p'   => $price,
+                'i'   => $img === '' ? null : $img,
+                'gal' => $galJson,
+                's'   => $slots,
+                'st'  => $st,
+                'id'  => $id,
             ]);
             header('Location: list.php', true, 302);
             exit;
         } catch (Throwable) {
             $err = 'Không cập nhật được.';
+        }
         }
     }
 }
@@ -136,6 +153,55 @@ require __DIR__ . '/../../includes/admin_header.php';
         <textarea class="form-control" name="description" rows="3"><?= h((string) ($_POST['description'] ?? (string) ($row['description'] ?? ''))) ?></textarea>
       </div>
       <div>
+        <label class="cell-muted" style="font-size:0.8rem">Giới thiệu hành trình (chi tiết)</label>
+        <p class="cell-muted" style="font-size:0.75rem;margin:0 0 6px;line-height:1.4">
+          Đoạn dài hiển thị trên trang chi tiết tour (dưới mô tả ngắn). Có thể nhiều đoạn.
+        </p>
+        <textarea class="form-control" name="journey_intro" rows="10"><?= h((string) ($_POST['journey_intro'] ?? (string) ($row['journey_intro'] ?? ''))) ?></textarea>
+      </div>
+      <div>
+        <label class="cell-muted" style="font-size:0.8rem">Điểm nhấn chương trình</label>
+        <p class="cell-muted" style="font-size:0.75rem;margin:0 0 6px;line-height:1.4">
+          Mỗi dòng một ý. Dùng <code>**từ khóa**</code> để in đậm (ví dụ <code>**Vịnh Hạ Long**</code>: di sản…).
+        </p>
+        <?php
+          $hiDefault = '';
+        if ($row && isset($row['highlights'])) {
+            foreach (tour_highlights_decode($row['highlights'] ?? null) as $ln) {
+                $hiDefault .= $ln . "\n";
+            }
+            $hiDefault = rtrim($hiDefault);
+        }
+        ?>
+        <textarea class="form-control" name="highlights_plain" rows="8" placeholder="**Điểm A:** Mô tả...&#10;**Điểm B:** ..."><?= h((string) ($_POST['highlights_plain'] ?? $hiDefault)) ?></textarea>
+      </div>
+      <div>
+        <label class="cell-muted" style="font-size:0.8rem">Lịch khởi hành (lịch trên web)</label>
+        <p class="cell-muted" style="font-size:0.75rem;margin:0 0 6px;line-height:1.4">
+          Mỗi dòng: <code>YYYY-MM-DD</code> hoặc <code>YYYY-MM-DD giá_đồng [promo]</code> (giá để hiển thị; đặt tour vẫn dùng giá tour nếu chưa tích hợp giá theo ngày). Ví dụ: <code>2026-04-22 19190000 promo</code>
+        </p>
+        <?php
+          $depDefault = '';
+        if ($row && !empty($row['departure_schedule'])) {
+            $rawDep = (string) $row['departure_schedule'];
+            if ($rawDep !== '' && $rawDep[0] === '[') {
+                $dec = tour_departures_decode($rawDep, (float) $row['price']);
+                foreach ($dec as $x) {
+                    $line = $x['date'] . ' ' . (string) (int) $x['price'];
+                    if ($x['promo']) {
+                        $line .= ' promo';
+                    }
+                    $depDefault .= $line . "\n";
+                }
+                $depDefault = rtrim($depDefault);
+            } else {
+                $depDefault = $rawDep;
+            }
+        }
+        ?>
+        <textarea class="form-control" name="departure_schedule_plain" rows="6" placeholder="2026-04-22&#10;2026-04-29 23990000 promo"><?= h((string) ($_POST['departure_schedule_plain'] ?? $depDefault)) ?></textarea>
+      </div>
+      <div>
         <label class="cell-muted" style="font-size:0.8rem">Lịch trình chi tiết (theo ngày)</label>
         <p class="cell-muted" style="font-size:0.75rem;margin:0 0 6px;line-height:1.4">
           Mỗi ngày: <code>=== NGÀY 1 ===</code>, dòng tiếp là tiêu đề, các dòng sau là nội dung. Để trống toàn bộ nếu không dùng lịch trình theo ngày.
@@ -153,8 +219,21 @@ require __DIR__ . '/../../includes/admin_header.php';
         </div>
       </div>
       <div>
-        <label class="cell-muted" style="font-size:0.8rem">URL ảnh</label>
-        <input class="form-control" name="image_url" value="<?= h((string) ($_POST['image_url'] ?? (string) ($row['image_url'] ?? ''))) ?>" />
+        <label class="cell-muted" style="font-size:0.8rem">URL ảnh đại diện</label>
+        <input class="form-control" name="image_url" value="<?= h((string) ($_POST['image_url'] ?? (string) ($row['image_url'] ?? ''))) ?>" placeholder="https://..." />
+      </div>
+      <div>
+        <label class="cell-muted" style="font-size:0.8rem">Ảnh gallery (thêm nhiều ảnh)</label>
+        <p class="cell-muted" style="font-size:0.75rem;margin:0 0 6px;line-height:1.4">
+          Mỗi dòng một URL đầy đủ (<code>https://...</code>). Hiển thị trên trang chi tiết tour và lightbox. Ảnh đại diện ở trên luôn là ảnh đầu tiên nếu có.
+        </p>
+        <?php
+          $galDefault = '';
+        if ($row && !empty($row['gallery_urls'])) {
+            $galDefault = implode("\n", tour_gallery_urls_decode((string) $row['gallery_urls']));
+        }
+        ?>
+        <textarea class="form-control" name="gallery_urls_plain" rows="5" placeholder="https://...&#10;https://..."><?= h((string) ($_POST['gallery_urls_plain'] ?? $galDefault)) ?></textarea>
       </div>
       <div>
         <label class="cell-muted" style="font-size:0.8rem">Trạng thái</label>
