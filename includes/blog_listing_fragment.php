@@ -8,7 +8,15 @@ declare(strict_types=1);
 ?>
         <div class="blog-featured">
           <?php if ($blogFeatured): ?>
-          <article class="blog-featured-main">
+          <?php
+            $featCat = blog_normalize_category(isset($blogFeatured['category']) ? (string) $blogFeatured['category'] : null);
+            $featKw = trim((string) ($blogFeatured['keywords'] ?? ''));
+            ?>
+          <article
+            class="blog-featured-main"
+            data-category="<?= htmlspecialchars($featCat, ENT_QUOTES, 'UTF-8') ?>"
+            data-keywords="<?= htmlspecialchars($featKw, ENT_QUOTES, 'UTF-8') ?>"
+          >
             <img
               src="<?= htmlspecialchars((string) (($blogFeatured['featured_image'] ?? '') !== '' ? $blogFeatured['featured_image'] : $blogDefaultImg), ENT_QUOTES, 'UTF-8') ?>"
               alt="<?= htmlspecialchars((string) ($blogFeatured['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"

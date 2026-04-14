@@ -19,7 +19,6 @@ if (!empty($_SESSION['register_success'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = mb_strtolower(trim((string) ($_POST['email'] ?? '')), 'UTF-8');
     $password = (string) ($_POST['password'] ?? '');
-    $password = trim($password);
 
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Email không hợp lệ.';

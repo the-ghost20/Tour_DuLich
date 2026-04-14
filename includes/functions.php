@@ -55,3 +55,68 @@ function vn_slug(string $text): string
     $text = trim((string) $text, '-');
     return $text !== '' ? $text : 'muc-' . time();
 }
+
+/**
+ * Kiểm tra độ dài mật khẩu: tối thiểu 8, tối đa 128 ký tự (không rỗng).
+ *
+ * @return list<string> Danh sách thông báo lỗi (rỗng nếu hợp lệ).
+ */
+function app_password_policy_errors(string $password): array
+{
+    $errors = [];
+    $len = mb_strlen($password, 'UTF-8');
+    if ($len < 8) {
+        $errors[] = 'Mật khẩu phải có độ dài tối thiểu 8 ký tự (khuyến nghị 8–12 ký tự).';
+    }
+    if ($len > 128) {
+        $errors[] = 'Mật khẩu không được vượt quá 128 ký tự.';
+    }
+
+    return $errors;
+}
+
+function app_normalize_phone_digits(string $phone): string
+{
+    return preg_replace('/\D+/', '', $phone);
+}
+
+/** Hai chuỗi SĐT có cùng một số (hỗ trợ 0xxxx / +84). */
+function app_phones_equivalent(string $a, string $b): bool
+{
+    $da = app_normalize_phone_digits($a);
+    $db = app_normalize_phone_digits($b);
+    if ($da === '' || $db === '') {
+        return false;
+    }
+    if (str_starts_with($da, '84') && strlen($da) >= 10) {
+        $da = '0' . substr($da, 2);
+    }
+    if (str_starts_with($db, '84') && strlen($db) >= 10) {
+        $db = '0' . substr($db, 2);
+    }
+
+    return $da === $db;
+}
+
+/**
+ * Số điện thoại đã được tài khoản khác dùng (so khớp theo chữ số, không phân biệt định dạng).
+ */
+function app_phone_exists_for_other_user(PDO $pdo, string $phone, ?int $exceptUserId = null): bool
+{
+    $phone = trim($phone);
+    if ($phone === '') {
+        return false;
+    }
+    $stmt = $pdo->query('SELECT id, phone FROM users');
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $uid = (int) $row['id'];
+        if ($exceptUserId !== null && $uid === $exceptUserId) {
+            continue;
+        }
+        if (app_phones_equivalent($phone, (string) $row['phone'])) {
+            return true;
+        }
+    }
+
+    return false;
+}

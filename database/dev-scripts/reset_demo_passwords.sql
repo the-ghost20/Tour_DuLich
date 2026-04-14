@@ -11,10 +11,10 @@ USE `tour_dulich`;
 UPDATE `users`
 SET `password` = '$2y$10$38S8lbqM25prVKtW.uh0Nu42qZnJT0F7dLyHq1aP6xMEfMn3.sZja'
 WHERE `email` IN (
-  'admin@dulichviet.test',
-  'staff@dulichviet.test',
-  'user1@dulichviet.test',
-  'user2@dulichviet.test',
-  'user3@dulichviet.test',
-  'user4@dulichviet.test'
+  'admin.dulichviet@gmail.com',
+  'staff.dulichviet@gmail.com',
+  'user1.dulichviet@gmail.com',
+  'user2.dulichviet@gmail.com',
+  'user3.dulichviet@gmail.com',
+  'user4.dulichviet@gmail.com'
 );

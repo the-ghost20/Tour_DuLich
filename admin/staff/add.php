@@ -21,14 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($name === '' || $email === '' || $pass === '') {
         $err = 'Điền họ tên, email và mật khẩu.';
-    } elseif (strlen($pass) < 6) {
-        $err = 'Mật khẩu tối thiểu 6 ký tự.';
+    } elseif ($phone === '') {
+        $err = 'Vui lòng nhập số điện thoại.';
+    } elseif ($errs = app_password_policy_errors($pass)) {
+        $err = implode(' ', $errs);
     } else {
         try {
             $dup = $pdo->prepare('SELECT id FROM users WHERE email = :e LIMIT 1');
             $dup->execute(['e' => $email]);
             if ($dup->fetch()) {
                 $err = 'Email đã được sử dụng.';
+            } elseif (app_phone_exists_for_other_user($pdo, $phone, null)) {
+                $err = 'Số điện thoại đã được dùng cho tài khoản khác.';
             } else {
                 $hash = password_hash($pass, PASSWORD_DEFAULT);
                 $pdo->prepare(
@@ -71,11 +75,11 @@ require dirname(__DIR__, 2) . '/includes/admin_header.php';
     </div>
     <div>
       <label class="cell-muted" style="font-size:0.8rem">Số điện thoại</label>
-      <input class="form-control" name="phone" value="<?= h((string) ($_POST['phone'] ?? '')) ?>" />
+      <input class="form-control" name="phone" required value="<?= h((string) ($_POST['phone'] ?? '')) ?>" />
     </div>
     <div>
       <label class="cell-muted" style="font-size:0.8rem">Mật khẩu</label>
-      <input class="form-control" type="password" name="password" required autocomplete="new-password" />
+      <input class="form-control" type="password" name="password" required minlength="8" maxlength="128" autocomplete="new-password" />
     </div>
     <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Tạo tài khoản</button>
   </form>

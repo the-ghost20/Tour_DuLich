@@ -24,9 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($phone === '') {
         $errors[] = 'Vui lòng nhập số điện thoại.';
     }
-    if (mb_strlen($password, 'UTF-8') < 8) {
-        $errors[] = 'Mật khẩu phải từ 8 ký tự trở lên.';
-    }
+    $errors = array_merge($errors, app_password_policy_errors($password));
 
     if (empty($errors)) {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
@@ -35,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($existing) {
             $errors[] = 'Email này đã được đăng ký. Vui lòng dùng email khác.';
+        } elseif (app_phone_exists_for_other_user($pdo, $phone, null)) {
+            $errors[] = 'Số điện thoại này đã được dùng cho tài khoản khác.';
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             $insert = $pdo->prepare(
@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <div class="auth-field">
             <label for="password"><i class="fas fa-lock" style="color: #00acc1; margin-right: 4px;"></i> Mật khẩu</label>
-            <input id="password" name="password" type="password" minlength="8" placeholder="Tạo mật khẩu" required />
+            <input id="password" name="password" type="password" minlength="8" maxlength="128" placeholder="Tối thiểu 8 ký tự (khuyến nghị 8–12)" required />
           </div>
 
           <div class="auth-actions">

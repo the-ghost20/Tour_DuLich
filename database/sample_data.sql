@@ -2,10 +2,10 @@
 -- Dữ liệu mẫu — chạy SAU database/tour_management.sql (database tour_dulich trống)
 -- mysql -u root -p tour_dulich < database/sample_data.sql
 --
--- Tài khoản mẫu (mật khẩu giống nhau):     
---   admin@dulichviet.test   — admin
---   staff@dulichviet.test   — staff
---   user1@dulichviet.test … user4@dulichviet.test — khách
+-- Tài khoản mẫu (mật khẩu giống nhau): password
+--   admin.dulichviet@gmail.com   — admin
+--   staff.dulichviet@gmail.com   — staff
+--   user1.dulichviet@gmail.com … user4.dulichviet@gmail.com — khách
 -- Hash bcrypt tương thích password_hash() PHP (PASSWORD_DEFAULT)
 -- =============================================================================
 
@@ -40,12 +40,12 @@ INSERT INTO `categories` (`id`, `name`, `slug`, `sort_order`) VALUES
 -- Người dùng
 -- -----------------------------------------------------------------------------
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `role`, `is_active`) VALUES
-(1, 'Quản trị viên', 'admin@dulichviet.test', @pwd, '0901000001', 'admin', 1),
-(2, 'Nhân viên Hành chính', 'staff@dulichviet.test', @pwd, '0901000002', 'staff', 1),
-(3, 'Nguyễn Minh An', 'user1@dulichviet.test', @pwd, '0912000001', 'user', 1),
-(4, 'Trần Thu Hà', 'user2@dulichviet.test', @pwd, '0912000002', 'user', 1),
-(5, 'Lê Quốc Huy', 'user3@dulichviet.test', @pwd, '0912000003', 'user', 1),
-(6, 'Phạm Ngọc Lan', 'user4@dulichviet.test', @pwd, '0912000004', 'user', 1);
+(1, 'Quản trị viên', 'admin.dulichviet@gmail.com', @pwd, '0901000001', 'admin', 1),
+(2, 'Nhân viên Hành chính', 'staff.dulichviet@gmail.com', @pwd, '0901000002', 'staff', 1),
+(3, 'Nguyễn Minh An', 'user1.dulichviet@gmail.com', @pwd, '0912000001', 'user', 1),
+(4, 'Trần Thu Hà', 'user2.dulichviet@gmail.com', @pwd, '0912000002', 'user', 1),
+(5, 'Lê Quốc Huy', 'user3.dulichviet@gmail.com', @pwd, '0912000003', 'user', 1),
+(6, 'Phạm Ngọc Lan', 'user4.dulichviet@gmail.com', @pwd, '0912000004', 'user', 1);
 
 -- -----------------------------------------------------------------------------
 -- Tour (mô tả rút gọn; ảnh minh họa)

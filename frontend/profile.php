@@ -66,6 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = 'Email này đã được sử dụng bởi tài khoản khác.';
             }
         }
+        if ($phone !== '' && app_phone_exists_for_other_user($pdo, $phone, $userId)) {
+            $errors[] = 'Số điện thoại này đã được dùng cho tài khoản khác.';
+        }
 
         if (empty($errors)) {
             $upd = $pdo->prepare(
@@ -95,9 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$rowPw || !password_verify($current, (string) $rowPw['password'])) {
             $errors[] = 'Mật khẩu hiện tại không đúng.';
         }
-        if (mb_strlen($newPass, 'UTF-8') < 8) {
-            $errors[] = 'Mật khẩu mới cần ít nhất 8 ký tự.';
-        }
+        $errors = array_merge($errors, app_password_policy_errors($newPass));
         if ($newPass !== $confirm) {
             $errors[] = 'Xác nhận mật khẩu mới không khớp.';
         }
@@ -184,11 +185,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="profile-field">
               <label for="new_password">Mật khẩu mới</label>
-              <input id="new_password" name="new_password" type="password" minlength="8" autocomplete="new-password" />
+              <input id="new_password" name="new_password" type="password" minlength="8" maxlength="128" autocomplete="new-password" />
             </div>
             <div class="profile-field">
               <label for="confirm_password">Xác nhận mật khẩu mới</label>
-              <input id="confirm_password" name="confirm_password" type="password" minlength="8" autocomplete="new-password" />
+              <input id="confirm_password" name="confirm_password" type="password" minlength="8" maxlength="128" autocomplete="new-password" />
             </div>
             <button type="submit" class="profile-btn profile-btn--secondary">Cập nhật mật khẩu</button>
           </form>

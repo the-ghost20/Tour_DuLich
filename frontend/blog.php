@@ -99,12 +99,12 @@ $activePage = 'blog';
             />
           </div>
           <div class="blog-filter-group">
-            <button class="blog-filter-btn is-active" data-filter="all">Tất cả</button>
-            <button class="blog-filter-btn" data-filter="cam-nang">Cẩm nang</button>
-            <button class="blog-filter-btn" data-filter="review">Review</button>
-            <button class="blog-filter-btn" data-filter="am-thuc">Văn hóa & Ẩm thực</button>
-            <button class="blog-filter-btn" data-filter="tin-tuc">Tin tức & Khuyến mãi</button>
-            <button class="blog-filter-btn" data-filter="testimonials">Câu chuyện khách hàng</button>
+            <button type="button" class="blog-filter-btn is-active" data-filter="all">Tất cả</button>
+            <button type="button" class="blog-filter-btn" data-filter="cam-nang">Cẩm nang</button>
+            <button type="button" class="blog-filter-btn" data-filter="review">Review</button>
+            <button type="button" class="blog-filter-btn" data-filter="am-thuc">Văn hóa & Ẩm thực</button>
+            <button type="button" class="blog-filter-btn" data-filter="tin-tuc">Tin tức & Khuyến mãi</button>
+            <button type="button" class="blog-filter-btn" data-filter="testimonials">Câu chuyện khách hàng</button>
           </div>
         </div>
         <div class="blog-filter-context" id="blog-filter-context">
@@ -168,8 +168,9 @@ $activePage = 'blog';
         if (!root) return;
 
         var searchInput = root.querySelector("#blog-search");
+        if (!searchInput) return;
         var filterBtns = root.querySelectorAll(".blog-filter-btn");
-        var cards = root.querySelectorAll(".blog-card");
+        var cards = root.querySelectorAll(".blog-featured-main, .blog-card");
         var emptyState = root.querySelector("#blog-empty");
         var contextTitle = root.querySelector("#blog-context-title");
         var contextDesc = root.querySelector("#blog-context-desc");
@@ -233,23 +234,33 @@ $activePage = 'blog';
           },
         };
 
-        function normalize(text) {
-          return text.toLowerCase().trim();
+        function foldVi(str) {
+          var s = String(str || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          s = s.replace(/đ/g, "d").replace(/Đ/g, "d");
+          return s.toLowerCase().trim();
         }
 
         function applyFilter() {
-          var keyword = normalize(searchInput.value || "");
+          var keyword = foldVi(searchInput.value || "");
           var visible = 0;
 
           cards.forEach(function (card) {
             var category = card.getAttribute("data-category") || "";
-            var fullText = normalize(card.textContent + " " + (card.getAttribute("data-keywords") || ""));
+            var fullText = foldVi(
+              card.textContent + " " + (card.getAttribute("data-keywords") || "")
+            );
 
             var categoryMatch = currentFilter === "all" || category === currentFilter;
-            var keywordMatch = keyword === "" || fullText.includes(keyword);
+            var keywordMatch = keyword === "" || fullText.indexOf(keyword) !== -1;
             var shouldShow = categoryMatch && keywordMatch;
 
-            card.style.display = shouldShow ? "flex" : "none";
+            if (card.classList.contains("blog-card")) {
+              card.style.display = shouldShow ? "flex" : "none";
+            } else {
+              card.style.display = shouldShow ? "" : "none";
+            }
             if (shouldShow) visible += 1;
           });
 
@@ -268,7 +279,7 @@ $activePage = 'blog';
 
         filterBtns.forEach(function (btn) {
           btn.addEventListener("click", function () {
-            currentFilter = btn.getAttribute("data-filter");
+            currentFilter = btn.getAttribute("data-filter") || "all";
             filterBtns.forEach(function (b) {
               b.classList.toggle("is-active", b === btn);
             });

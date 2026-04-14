@@ -34,16 +34,21 @@ if ($row && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($name === '' || $email === '') {
         $err = 'Điền họ tên và email.';
+    } elseif ($phone === '') {
+        $err = 'Vui lòng nhập số điện thoại.';
     } else {
         try {
             $dup = $pdo->prepare('SELECT id FROM users WHERE email = :e AND id != :id LIMIT 1');
             $dup->execute(['e' => $email, 'id' => $id]);
             if ($dup->fetch()) {
                 $err = 'Email đã được sử dụng.';
+            } elseif (app_phone_exists_for_other_user($pdo, $phone, $id)) {
+                $err = 'Số điện thoại đã được dùng cho tài khoản khác.';
             } else {
                 if ($pass !== '') {
-                    if (strlen($pass) < 6) {
-                        $err = 'Mật khẩu tối thiểu 6 ký tự.';
+                    $pwErrs = app_password_policy_errors($pass);
+                    if ($pwErrs !== []) {
+                        $err = implode(' ', $pwErrs);
                     } else {
                         $hash = password_hash($pass, PASSWORD_DEFAULT);
                         $pdo->prepare(
