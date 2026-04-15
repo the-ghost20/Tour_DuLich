@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../config/database.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 if (empty($_SESSION['user_id'])) {
-    header('Location: ../auth/login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -24,16 +24,12 @@ $user = $stmt->fetch();
 
 if (!$user) {
     session_destroy();
-    header('Location: ../auth/login.php');
+    header('Location: login.php');
     exit;
 }
 
 if ((string) $user['role'] === 'admin') {
-    header('Location: ../admin/index.php');
-    exit;
-}
-if ((string) $user['role'] === 'staff') {
-    header('Location: ../staff/index.php');
+    header('Location: ../admin/tours.php');
     exit;
 }
 
@@ -66,9 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = 'Email này đã được sử dụng bởi tài khoản khác.';
             }
         }
-        if ($phone !== '' && app_phone_exists_for_other_user($pdo, $phone, $userId)) {
-            $errors[] = 'Số điện thoại này đã được dùng cho tài khoản khác.';
-        }
 
         if (empty($errors)) {
             $upd = $pdo->prepare(
@@ -98,7 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$rowPw || !password_verify($current, (string) $rowPw['password'])) {
             $errors[] = 'Mật khẩu hiện tại không đúng.';
         }
-        $errors = array_merge($errors, app_password_policy_errors($newPass));
+        if (mb_strlen($newPass, 'UTF-8') < 8) {
+            $errors[] = 'Mật khẩu mới cần ít nhất 8 ký tự.';
+        }
         if ($newPass !== $confirm) {
             $errors[] = 'Xác nhận mật khẩu mới không khớp.';
         }
@@ -121,13 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hồ sơ cá nhân - Du Lịch Việt</title>
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body>
     <?php
       $activePage = '';
-      require __DIR__ . '/../includes/header.php';
+      require __DIR__ . '/includes/header.php';
     ?>
 
     <section class="profile-hero">
@@ -185,11 +180,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="profile-field">
               <label for="new_password">Mật khẩu mới</label>
-              <input id="new_password" name="new_password" type="password" minlength="8" maxlength="128" autocomplete="new-password" />
+              <input id="new_password" name="new_password" type="password" minlength="8" autocomplete="new-password" />
             </div>
             <div class="profile-field">
               <label for="confirm_password">Xác nhận mật khẩu mới</label>
-              <input id="confirm_password" name="confirm_password" type="password" minlength="8" maxlength="128" autocomplete="new-password" />
+              <input id="confirm_password" name="confirm_password" type="password" minlength="8" autocomplete="new-password" />
             </div>
             <button type="submit" class="profile-btn profile-btn--secondary">Cập nhật mật khẩu</button>
           </form>
@@ -197,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
 
-    <?php require __DIR__ . '/../includes/footer.php'; ?>
-    <script src="../assets/js/main.js"></script>
+    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <script src="js/script.js"></script>
   </body>
 </html>

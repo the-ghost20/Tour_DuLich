@@ -1,32 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../includes/db.php';
-
 $activePage = 'about';
-
-$statCustomers = 0;
-$statBookings = 0;
-$statToursOnSale = 0;
-
-try {
-    $statCustomers = (int) $pdo->query(
-        "SELECT COUNT(*) FROM users WHERE role = 'user'"
-    )->fetchColumn();
-    $statBookings = (int) $pdo->query(
-        'SELECT COUNT(*) FROM bookings'
-    )->fetchColumn();
-    $row = $pdo->query(
-        "SELECT SUM(status = 'hiện') AS visible FROM tours"
-    )->fetch();
-    $statToursOnSale = (int) ($row['visible'] ?? 0);
-} catch (Throwable) {
-    // Giữ 0 nếu truy vấn lỗi
-}
-
-$fmtStatPlus = static function (int $n): string {
-    return htmlspecialchars(number_format($n, 0, ',', '.') . '+', ENT_QUOTES, 'UTF-8');
-};
 ?>
 <!doctype html>
 <html lang="vi">
@@ -34,7 +9,7 @@ $fmtStatPlus = static function (int $n): string {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Giới Thiệu - Du Lịch Việt</title>
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="css/styles.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -42,7 +17,7 @@ $fmtStatPlus = static function (int $n): string {
   </head>
 
   <body>
-    <?php require_once __DIR__ . '/../includes/header.php'; ?>
+    <?php require_once __DIR__ . '/includes/header.php'; ?>
 
     <!-- HERO SECTION -->
     <section class="hero-section about-hero">
@@ -81,8 +56,8 @@ $fmtStatPlus = static function (int $n): string {
           </div>
           <div class="story-img">
             <img
-              src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=900&q=80"
-              alt="Vịnh Hạ Long — cảnh đẹp Việt Nam"
+              src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=80"
+              alt="Du lịch Việt"
             />
           </div>
         </div>
@@ -118,17 +93,17 @@ $fmtStatPlus = static function (int $n): string {
         <div class="stats-section">
           <div class="stat-item">
             <i class="fas fa-users" aria-hidden="true"></i>
-            <h3><?= $fmtStatPlus($statCustomers) ?></h3>
+            <h3>10.000+</h3>
             <p>Khách hàng hài lòng</p>
           </div>
           <div class="stat-item">
             <i class="fas fa-suitcase-rolling" aria-hidden="true"></i>
-            <h3><?= $fmtStatPlus($statBookings) ?></h3>
+            <h3>500+</h3>
             <p>Tour được đặt</p>
           </div>
           <div class="stat-item">
             <i class="fas fa-location-dot" aria-hidden="true"></i>
-            <h3><?= $fmtStatPlus($statToursOnSale) ?></h3>
+            <h3>0+</h3>
             <p>Tour đang mở bán</p>
           </div>
           <div class="stat-item">
@@ -140,8 +115,8 @@ $fmtStatPlus = static function (int $n): string {
       </div>
     </section>
 
-    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-    <script src="../assets/js/main.js"></script>
+    <?php require_once __DIR__ . '/includes/footer.php'; ?>
+    <script src="js/script.js"></script>
   </body>
 </html>
 

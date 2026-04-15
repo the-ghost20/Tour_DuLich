@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/tour_itinerary.php';
-require_once __DIR__ . '/../includes/tour_content_helpers.php';
+require_once __DIR__ . '/../config/database.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -19,7 +17,7 @@ if ($tourId <= 0) {
 }
 
 $stmt = $pdo->prepare(
-    "SELECT id, tour_name, description, journey_intro, highlights, departure_schedule, itinerary, destination, duration, price, image_url, gallery_urls, available_slots, status
+    "SELECT id, tour_name, description, destination, duration, price, image_url, available_slots, status
      FROM tours WHERE id = :id LIMIT 1"
 );
 $stmt->execute(['id' => $tourId]);
@@ -116,79 +114,14 @@ $tourName = htmlspecialchars((string) $tour['tour_name'], ENT_QUOTES, 'UTF-8');
 $destination = htmlspecialchars((string) $tour['destination'], ENT_QUOTES, 'UTF-8');
 $duration = htmlspecialchars((string) $tour['duration'], ENT_QUOTES, 'UTF-8');
 $description = nl2br(htmlspecialchars((string) $tour['description'], ENT_QUOTES, 'UTF-8'));
-$itineraryDays = tour_itinerary_decode($tour['itinerary'] ?? null);
-$descPlain = trim((string) ($tour['description'] ?? ''));
-$journeyIntroPlain = trim((string) ($tour['journey_intro'] ?? ''));
-$journeyIntroHtml = $journeyIntroPlain !== ''
-    ? nl2br(htmlspecialchars($journeyIntroPlain, ENT_QUOTES, 'UTF-8'))
-    : '';
-$highlightsList = tour_highlights_decode($tour['highlights'] ?? null);
 $priceNum = (float) $tour['price'];
-$departuresList = tour_departures_decode($tour['departure_schedule'] ?? null, $priceNum);
-$departuresJson = htmlspecialchars(
-    json_encode($departuresList, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    ENT_QUOTES,
-    'UTF-8'
-);
 $priceText = number_format($priceNum, 0, ',', '.') . ' đ';
+$imageUrl = !empty($tour['image_url'])
+    ? htmlspecialchars((string) $tour['image_url'], ENT_QUOTES, 'UTF-8')
+    : 'https://images.unsplash.com/photo-1528127269322-539801943592?w=1200&h=700&fit=crop';
 $slots = (int) $tour['available_slots'];
 
 $displayAvg = $avgRating !== null && $reviewCount > 0 ? number_format($avgRating, 1, ',', '.') : '—';
-
-$tourRefCode = 'DLV-' . str_pad((string) $tourId, 5, '0', STR_PAD_LEFT);
-$slotsUrgent = $slots > 0 && $slots <= 8;
-
-$galleryMainRaw = !empty($tour['image_url'])
-    ? (string) $tour['image_url']
-    : '';
-$galleryAdmin = tour_gallery_urls_decode($tour['gallery_urls'] ?? null);
-$galleryFallback = [
-    'https://images.unsplash.com/photo-1528127269322-539801943592?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1537225228614-b4fad34a0b60?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1584422604131-a971d26d8f44?w=1200&h=800&fit=crop',
-];
-$galleryPool = [];
-if ($galleryMainRaw !== '') {
-    $galleryPool[] = $galleryMainRaw;
-}
-foreach ($galleryAdmin as $u) {
-    $galleryPool[] = $u;
-}
-$galleryImages = [];
-$gallerySeen = [];
-foreach ($galleryPool as $gUrl) {
-    if (isset($gallerySeen[$gUrl])) {
-        continue;
-    }
-    $gallerySeen[$gUrl] = true;
-    $galleryImages[] = $gUrl;
-}
-if ($galleryImages === []) {
-    foreach ($galleryFallback as $gUrl) {
-        if (isset($gallerySeen[$gUrl])) {
-            continue;
-        }
-        $gallerySeen[$gUrl] = true;
-        $galleryImages[] = $gUrl;
-        if (count($galleryImages) >= 4) {
-            break;
-        }
-    }
-}
-
-$galleryLightboxItems = [];
-foreach ($galleryImages as $gFull) {
-    $thumbLb = str_contains($gFull, 'unsplash.com')
-        ? (preg_replace('/\?.*$/', '', $gFull) ?: $gFull) . '?auto=format&fit=crop&w=160&h=112&q=75'
-        : $gFull;
-    $galleryLightboxItems[] = ['full' => $gFull, 'thumb' => $thumbLb];
-}
-$galleryItemsJson = htmlspecialchars(
-    json_encode($galleryLightboxItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    ENT_QUOTES,
-    'UTF-8'
-);
 
 ?>
 <!doctype html>
@@ -197,252 +130,45 @@ $galleryItemsJson = htmlspecialchars(
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= $tourName ?> - Du Lịch Việt</title>
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <script>
-      window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
-    </script>
   </head>
   <body>
     <?php
       $activePage = 'tours';
-      require __DIR__ . '/../includes/header.php';
+      require __DIR__ . '/includes/header.php';
     ?>
 
-    <article class="tour-detail-page td-pro">
-      <div class="container td-pro-head">
-        <nav class="td-breadcrumb" aria-label="Breadcrumb">
-          <a href="index.php">Trang chủ</a>
-          <span class="td-bc-sep">/</span>
-          <a href="tours.php">Tour</a>
-          <span class="td-bc-sep">/</span>
-          <span class="td-bc-current"><?= $tourName ?></span>
-        </nav>
-        <h1 class="td-pro-title"><?= $tourName ?></h1>
-      </div>
-
-      <div class="container td-pro-booking-row">
-        <div
-          class="td-pro-gallery"
-          data-td-gallery
-          data-gallery-items="<?= $galleryItemsJson ?>"
-        >
-          <div class="td-pro-gallery-thumbs" role="tablist" aria-label="Ảnh tour">
-            <?php foreach ($galleryImages as $gi => $gFull): ?>
-              <?php
-                $gFullEsc = htmlspecialchars($gFull, ENT_QUOTES, 'UTF-8');
-                $gThumbRaw = str_contains($gFull, 'unsplash.com')
-                    ? (preg_replace('/\?.*$/', '', $gFull) ?: $gFull) . '?auto=format&fit=crop&w=200&h=140&q=70'
-                    : $gFull;
-                $gThumbEsc = htmlspecialchars($gThumbRaw, ENT_QUOTES, 'UTF-8');
-              ?>
-              <button
-                type="button"
-                class="td-gallery-thumb<?= $gi === 0 ? ' is-active' : '' ?>"
-                data-full="<?= $gFullEsc ?>"
-                aria-label="Xem ảnh <?= $gi + 1 ?>"
-                <?= $gi === 0 ? ' aria-current="true"' : '' ?>
-              >
-                <img src="<?= $gThumbEsc ?>" alt="" loading="<?= $gi === 0 ? 'eager' : 'lazy' ?>" width="200" height="140" />
-              </button>
-            <?php endforeach; ?>
-          </div>
-          <div
-            class="td-pro-gallery-main td-gallery-main td-gallery-main-trigger"
-            tabindex="0"
-            role="button"
-            aria-label="Mở xem ảnh lớn"
-          >
-            <img
-              src="<?= htmlspecialchars($galleryImages[0] ?? $galleryMainRaw, ENT_QUOTES, 'UTF-8') ?>"
-              alt="<?= $tourName ?>"
-              width="1200"
-              height="800"
-            />
-          </div>
+    <article class="tour-detail-page">
+      <div class="tour-detail-hero">
+        <img src="<?= $imageUrl ?>" alt="<?= $tourName ?>" />
+        <div class="tour-detail-hero-overlay"></div>
+        <div class="container tour-detail-hero-inner">
+          <nav class="tour-detail-breadcrumb">
+            <a href="index.php">Trang chủ</a>
+            <span>/</span>
+            <a href="tours.php">Tour</a>
+            <span>/</span>
+            <span><?= $tourName ?></span>
+          </nav>
+          <h1><?= $tourName ?></h1>
+          <p class="tour-detail-meta-line">
+            <span><i class="fas fa-map-marker-alt"></i> <?= $destination ?></span>
+            <span><i class="fas fa-calendar-alt"></i> <?= $duration ?></span>
+            <span><i class="fas fa-users"></i> Còn <?= $slots ?> chỗ</span>
+          </p>
         </div>
-
-        <aside class="td-book-card tour-detail-book-card tour-card"
-          data-tour-id="<?= (int) $tour['id'] ?>"
-          data-destination="<?= htmlspecialchars(mb_strtolower((string) $tour['destination'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>">
-          <button type="button" class="btn-wishlist td-book-wishlist" title="Yêu thích" data-tour-id="<?= (int) $tour['id'] ?>" data-tour-name="<?= $tourName ?>">
-            <i class="fas fa-heart"></i>
-          </button>
-          <div class="td-book-price-block">
-            <span class="td-book-price-label">Giá từ</span>
-            <div class="td-book-price-row">
-              <span class="td-price-current"><?= $priceText ?></span>
-              <span class="td-price-unit">/ khách</span>
-            </div>
-          </div>
-          <div class="td-book-promo" role="note">
-            <i class="fas fa-gift" aria-hidden="true"></i>
-            <p>Đặt online — nhập mã khuyến mãi trong bước xác nhận để được ưu đãi (nếu có).</p>
-          </div>
-          <ul class="td-book-meta">
-            <li>
-              <i class="fas fa-ticket-alt" aria-hidden="true"></i>
-              <div><span class="td-meta-k">Mã tour</span> <strong class="td-meta-v"><?= htmlspecialchars($tourRefCode, ENT_QUOTES, 'UTF-8') ?></strong></div>
-            </li>
-            <li>
-              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-              <div><span class="td-meta-k">Điểm đến</span> <strong class="td-meta-v"><?= $destination ?></strong></div>
-            </li>
-            <li>
-              <i class="fas fa-clock" aria-hidden="true"></i>
-              <div><span class="td-meta-k">Thời lượng</span> <strong class="td-meta-v"><?= $duration ?></strong></div>
-            </li>
-            <li>
-              <i class="fas fa-clipboard-list" aria-hidden="true"></i>
-              <div>
-                <span class="td-meta-k">Số chỗ còn</span>
-                <strong class="td-meta-v td-meta-slots<?= $slotsUrgent ? ' td-meta-slots--urgent' : '' ?>"><?= $slots ?></strong>
-              </div>
-            </li>
-          </ul>
-          <div class="td-book-actions">
-            <button type="button" class="btn-book tour-detail-book-btn td-btn-book-primary"
-              data-tour-id="<?= (int) $tour['id'] ?>"
-              data-tour-name="<?= $tourName ?>"
-              data-tour-price="<?= $priceNum ?>">
-              <i class="fas fa-calendar-check" aria-hidden="true"></i> Đặt ngay
-            </button>
-            <a href="tours.php" class="td-btn-book-outline">← Chọn tour khác</a>
-          </div>
-        </aside>
       </div>
 
-      <div class="container td-pro-content">
-        <input type="hidden" id="td-picked-departure" value="" autocomplete="off" />
-        <div class="tour-detail-main td-pro-main">
-          <section class="tour-detail-section td-pro-section">
-            <h2 class="td-section-title">Giới thiệu hành trình</h2>
-            <div class="td-journey-stack">
-              <?php if ($descPlain !== ''): ?>
-                <div class="tour-detail-desc td-pro-lead td-journey-short"><?= $description ?></div>
-              <?php endif; ?>
-              <?php if ($journeyIntroPlain !== ''): ?>
-                <div class="tour-detail-desc td-journey-long"><?= $journeyIntroHtml ?></div>
-              <?php elseif ($descPlain === ''): ?>
-                <p class="tour-detail-muted">Nội dung đang được cập nhật.</p>
-              <?php endif; ?>
-            </div>
+      <div class="container tour-detail-body">
+        <div class="tour-detail-main">
+          <section class="tour-detail-section">
+            <h2>Giới thiệu hành trình</h2>
+            <div class="tour-detail-desc"><?= $description ?></div>
           </section>
 
-          <?php if ($highlightsList !== []): ?>
-            <section class="td-pro-section" aria-labelledby="td-highlights-heading">
-              <h2 id="td-highlights-heading" class="visually-hidden">Điểm nhấn chương trình</h2>
-              <details class="td-highlights-card" open>
-                <summary class="td-highlights-summary">
-                  <span class="td-highlights-title">Điểm nhấn của chương trình</span>
-                  <span class="td-highlights-toggle">
-                    <span class="td-hl-when-open">Thu gọn</span>
-                    <span class="td-hl-when-closed">Mở rộng</span>
-                  </span>
-                </summary>
-                <ul class="td-highlights-list">
-                  <?php foreach ($highlightsList as $hl): ?>
-                    <li><?= tour_format_highlight_line($hl) ?></li>
-                  <?php endforeach; ?>
-                </ul>
-              </details>
-            </section>
-          <?php endif; ?>
-
-          <?php if ($departuresList !== []): ?>
-            <section
-              class="td-pro-section td-cal-section"
-              id="td-departure-root"
-              data-td-departures="<?= $departuresJson ?>"
-              data-td-base-price="<?= htmlspecialchars((string) $priceNum, ENT_QUOTES, 'UTF-8') ?>"
-            >
-              <h2 class="td-section-title td-section-title--center">Lịch khởi hành</h2>
-              <div class="td-cal-card">
-                <div class="td-cal-inner">
-                  <aside class="td-cal-sidebar" aria-label="Chọn tháng">
-                    <div class="td-cal-sidebar-title">Chọn tháng</div>
-                    <div class="td-cal-month-list" data-td-cal-months></div>
-                  </aside>
-                  <div class="td-cal-main">
-                    <div class="td-cal-nav">
-                      <button type="button" class="td-cal-nav-btn" data-td-cal-prev aria-label="Tháng trước">
-                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
-                      </button>
-                      <div class="td-cal-month-title" data-td-cal-title>—</div>
-                      <button type="button" class="td-cal-nav-btn td-cal-nav-btn--next" data-td-cal-next aria-label="Tháng sau">
-                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
-                      </button>
-                    </div>
-                    <div class="td-cal-weekdays" aria-hidden="true">
-                      <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span class="td-cal-wd-h">T7</span><span class="td-cal-wd-h">CN</span>
-                    </div>
-                    <div class="td-cal-grid" data-td-cal-grid></div>
-                    <p class="td-cal-hint">
-                      <em>Quý khách vui lòng chọn ngày phù hợp — ngày đã chọn sẽ gợi ý trong form đặt tour.</em>
-                    </p>
-                    <p class="td-cal-disclaimer">Giá hiển thị trên lịch mang tính tham khảo; tổng tiền đặt tour vẫn theo bảng giá và mã khuyến mãi khi xác nhận đơn.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          <?php endif; ?>
-
-          <section class="td-pro-section td-quick-section" aria-labelledby="td-quick-heading">
-            <h2 id="td-quick-heading" class="td-section-title td-section-title--center">Thông tin thêm về chuyến đi</h2>
-            <div class="td-quick-grid">
-              <div class="td-quick-card">
-                <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
-                <h3>Điểm tham quan</h3>
-                <p><?= $destination ?></p>
-              </div>
-              <div class="td-quick-card">
-                <i class="fas fa-utensils" aria-hidden="true"></i>
-                <h3>Ẩm thực</h3>
-                <p>Bữa ăn theo chương trình từng ngày (chi tiết trong lịch trình).</p>
-              </div>
-              <div class="td-quick-card">
-                <i class="fas fa-users" aria-hidden="true"></i>
-                <h3>Đối tượng phù hợp</h3>
-                <p>Gia đình, cặp đôi, nhóm bạn và khách lẻ yêu thích khám phá.</p>
-              </div>
-              <div class="td-quick-card">
-                <i class="fas fa-sun" aria-hidden="true"></i>
-                <h3>Thời gian lý tưởng</h3>
-                <p>Quanh năm — tham khảo thêm ngày khởi hành khi đặt tour.</p>
-              </div>
-              <div class="td-quick-card">
-                <i class="fas fa-bus" aria-hidden="true"></i>
-                <h3>Phương tiện</h3>
-                <p>Theo lịch trình (xe du lịch, phương tiện công cộng hoặc máy bay nếu có ghi rõ).</p>
-              </div>
-              <div class="td-quick-card">
-                <i class="fas fa-tags" aria-hidden="true"></i>
-                <h3>Khuyến mãi</h3>
-                <p>Áp dụng mã giảm giá tại bước đặt tour (nếu còn hiệu lực).</p>
-              </div>
-            </div>
-          </section>
-
-          <?php if ($itineraryDays !== []): ?>
-            <section class="tour-detail-section td-pro-section" aria-labelledby="td-itin-heading">
-              <h2 id="td-itin-heading" class="td-section-title td-section-title--center">Lịch trình</h2>
-              <div class="td-itinerary-acc-list">
-                <?php foreach ($itineraryDays as $idx => $d): ?>
-                  <details class="td-itinerary-acc"<?= $idx === 0 ? ' open' : '' ?>>
-                    <summary>
-                      <span class="td-itin-badge">Ngày <?= $idx + 1 ?></span>
-                      <span class="td-itin-sum-title"><?= htmlspecialchars($d['title'], ENT_QUOTES, 'UTF-8') ?></span>
-                      <i class="fas fa-chevron-down td-itin-chevron" aria-hidden="true"></i>
-                    </summary>
-                    <div class="td-itin-body tour-itinerary-day-body"><?= nl2br(htmlspecialchars($d['body'], ENT_QUOTES, 'UTF-8')) ?></div>
-                  </details>
-                <?php endforeach; ?>
-              </div>
-            </section>
-          <?php endif; ?>
-
-          <section class="tour-detail-section tour-reviews-block td-pro-section">
-            <h2 class="td-section-title">Đánh giá từ khách (<?= (int) $reviewCount ?>)</h2>
+          <section class="tour-detail-section tour-reviews-block">
+            <h2>Đánh giá từ khách (<?= (int) $reviewCount ?>)</h2>
             <div class="tour-detail-rating-summary">
               <strong><?= htmlspecialchars($displayAvg, ENT_QUOTES, 'UTF-8') ?></strong>
               <span>/ 5 sao trung bình</span>
@@ -492,139 +218,33 @@ $galleryItemsJson = htmlspecialchars(
                 <button type="submit" class="profile-btn">Gửi đánh giá</button>
               </form>
             <?php else: ?>
-              <p class="tour-detail-muted"><a href="../auth/login.php">Đăng nhập</a> để gửi đánh giá và bình luận.</p>
+              <p class="tour-detail-muted"><a href="login.php">Đăng nhập</a> để gửi đánh giá và bình luận.</p>
             <?php endif; ?>
           </section>
-
-          <section class="td-pro-section td-policy-section" aria-labelledby="td-policy-heading">
-            <h2 id="td-policy-heading" class="td-section-title td-section-title--center">Những thông tin cần lưu ý</h2>
-            <div class="td-policy-grid">
-              <div class="td-policy-col">
-                <details class="td-policy-item">
-                  <summary>Giá tour bao gồm</summary>
-                  <div class="td-policy-body">
-                    <p>Vé tham quan theo chương trình, các bữa ăn ghi trong lịch trình, xe đưa đón theo hành trình, hướng dẫn viên (nếu có), bảo hiểm du lịch khi được nêu trong xác nhận đơn.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Giá tour không bao gồm</summary>
-                  <div class="td-policy-body">
-                    <p>Chi phí cá nhân, đồ uống ngoài chương trình, hành lý quá cước, tip (tuỳ ý), vé máy bay / visa nếu không ghi rõ trong chương trình.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Lưu ý giá trẻ em</summary>
-                  <div class="td-policy-body">
-                    <p>Trên hệ thống, trẻ em thường được tính 50% giá người lớn khi đặt; chi tiết cụ thể sẽ được xác nhận khi duyệt đơn.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Điều kiện thanh toán</summary>
-                  <div class="td-policy-body">
-                    <p>Thanh toán theo hướng dẫn sau khi đơn được duyệt; có thể qua chuyển khoản hoặc hình thức công ty thông báo.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Điều kiện đăng ký</summary>
-                  <div class="td-policy-body">
-                    <p>Cung cấp thông tin chính xác; đặt cọc / thanh toán đúng hạn theo xác nhận từ bộ phận tư vấn.</p>
-                  </div>
-                </details>
-              </div>
-              <div class="td-policy-col">
-                <details class="td-policy-item">
-                  <summary>Lưu ý chuyển hoặc hủy tour</summary>
-                  <div class="td-policy-body">
-                    <p>Liên hệ hotline sớm nhất khi cần đổi lịch hoặc hủy; mức phí phụ thuộc thời điểm và chính sách từng tour.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Điều kiện hủy tour (ngày thường)</summary>
-                  <div class="td-policy-body">
-                    <p>Áp dụng theo từng mốc thời gian (ví dụ trước 30 ngày, 15 ngày…) — chi tiết gửi kèm khi xác nhận đơn.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Điều kiện hủy tour (lễ, Tết)</summary>
-                  <div class="td-policy-body">
-                    <p>Dịp cao điểm có thể áp dụng mức phí hoặc điều kiện chặt hơn; vui lòng đọc kỹ khi đặt khởi hành dịp lễ.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Trường hợp bất khả kháng</summary>
-                  <div class="td-policy-body">
-                    <p>Thời tiết, sự cố hàng không hoặc sự kiện ngoài kiểm soát — công ty hỗ trợ phương án thay thế hoặc hoàn tiền theo quy định hiện hành.</p>
-                  </div>
-                </details>
-                <details class="td-policy-item">
-                  <summary>Liên hệ</summary>
-                  <div class="td-policy-body">
-                    <p><strong>Hotline:</strong> (+84) 909 090 909 (08:00–22:00)<br /><strong>Email:</strong> dulichviet@gmail.com<br /><strong>Địa chỉ:</strong> Số 1 Đường Bạch Đằng, Quận 1, TP. HCM</p>
-                  </div>
-                </details>
-              </div>
-            </div>
-          </section>
         </div>
+
+        <aside class="tour-detail-aside">
+          <div class="tour-detail-book-card tour-card"
+            data-tour-id="<?= (int) $tour['id'] ?>"
+            data-destination="<?= htmlspecialchars(mb_strtolower((string) $tour['destination'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>">
+            <div class="tour-detail-price"><?= $priceText ?> <small>/ người</small></div>
+            <button type="button" class="btn-wishlist" title="Yêu thích" data-tour-id="<?= (int) $tour['id'] ?>" data-tour-name="<?= $tourName ?>"><i class="fas fa-heart"></i></button>
+            <button type="button" class="btn-book tour-detail-book-btn"
+              data-tour-id="<?= (int) $tour['id'] ?>"
+              data-tour-name="<?= $tourName ?>"
+              data-tour-price="<?= $priceNum ?>">Đặt tour</button>
+            <a href="tours.php" class="btn-tour-detail btn-tour-detail--block">← Quay lại danh sách</a>
+          </div>
+        </aside>
       </div>
     </article>
 
-    <div
-      id="td-lightbox"
-      class="td-lightbox"
-      hidden
-      aria-hidden="true"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="td-lightbox-title"
-    >
-      <div class="td-lightbox-backdrop" data-td-lb-close tabindex="-1"></div>
-      <div class="td-lightbox-panel">
-        <h2 id="td-lightbox-title" class="visually-hidden">Xem ảnh tour</h2>
-        <button type="button" class="td-lightbox-close" data-td-lb-close aria-label="Đóng">
-          <i class="fas fa-times" aria-hidden="true"></i>
-        </button>
-        <div class="td-lightbox-main-wrap">
-          <button
-            type="button"
-            class="td-lightbox-nav td-lightbox-prev"
-            aria-label="Ảnh trước"
-          >
-            <i class="fas fa-chevron-left" aria-hidden="true"></i>
-          </button>
-          <div class="td-lightbox-stage">
-            <img class="td-lightbox-img" src="" alt="" />
-            <a
-              class="td-lightbox-fs"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Mở ảnh full size trong tab mới"
-              title="Full size"
-            >
-              <i class="fas fa-expand" aria-hidden="true"></i>
-            </a>
-          </div>
-          <button
-            type="button"
-            class="td-lightbox-nav td-lightbox-next"
-            aria-label="Ảnh sau"
-          >
-            <i class="fas fa-chevron-right" aria-hidden="true"></i>
-          </button>
-        </div>
-        <div class="td-lightbox-thumbs-head">
-          <span class="td-lightbox-count"
-            >Tất cả ảnh (<span data-td-lb-count>0</span>)</span>
-        </div>
-        <div class="td-lightbox-thumbs-scroll">
-          <div class="td-lightbox-thumbs" data-td-lb-thumbs></div>
-        </div>
-      </div>
-    </div>
+    <?php require __DIR__ . '/includes/booking_modal.php'; ?>
 
-    <?php require __DIR__ . '/../includes/booking_modal.php'; ?>
-
-    <?php require __DIR__ . '/../includes/footer.php'; ?>
+    <?php require __DIR__ . '/includes/footer.php'; ?>
+    <script>
+      window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
+    </script>
+    <script src="js/script.js"></script>
   </body>
 </html>
