@@ -1136,22 +1136,71 @@ a {
 }
 
 .btn-wishlist {
-  flex: 0 0 40px;
-  height: 40px;
-  background: var(--bg-light);
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.94);
+  color: #e91e63;
+  font-size: 1.08rem;
+  line-height: 1;
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(233, 30, 99, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease,
+    color 0.22s ease;
 }
 
 .btn-wishlist:hover {
-  border-color: var(--secondary-color);
-  background: #ffe5e5;
-  color: var(--secondary-color);
+  transform: scale(1.07);
+  color: #c2185b;
+  background: #fff;
+  box-shadow:
+    0 6px 20px rgba(233, 30, 99, 0.22),
+    0 0 0 1px rgba(233, 30, 99, 0.2);
+}
+
+.btn-wishlist:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 3px;
+}
+
+.btn-wishlist.added {
+  background: linear-gradient(145deg, #ff7b7b 0%, #e91e63 55%, #d81b60 100%);
+  color: #fff;
+  box-shadow:
+    0 6px 18px rgba(233, 30, 99, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.22) inset;
+}
+
+.btn-wishlist.added:hover {
+  color: #fff;
+  transform: scale(1.07);
+  box-shadow:
+    0 8px 24px rgba(216, 27, 96, 0.48),
+    0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+}
+
+.btn-wishlist:active {
+  transform: scale(0.96);
+}
+
+.btn-wishlist.added:active {
+  transform: scale(0.96);
 }
 
 .btn-book {
@@ -3458,27 +3507,6 @@ body.tours-page {
   top: 0.75rem;
   right: 0.75rem;
   z-index: 5;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
-  color: var(--secondary-color);
-  font-size: 1rem;
-}
-
-.tours-page .btn-wishlist--card:hover {
-  background: var(--secondary-color);
-  color: #fff;
-  border-color: transparent;
-  transform: scale(1.05);
-}
-
-.tours-page .btn-wishlist.added {
-  background: var(--secondary-color);
-  color: #fff;
-  border-color: transparent;
 }
 
 .tours-page .tour-card-content {

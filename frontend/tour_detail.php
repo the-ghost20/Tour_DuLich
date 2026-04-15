@@ -265,8 +265,8 @@ $galleryItemsJson = htmlspecialchars(
         <aside class="td-book-card tour-detail-book-card tour-card"
           data-tour-id="<?= (int) $tour['id'] ?>"
           data-destination="<?= htmlspecialchars(mb_strtolower((string) $tour['destination'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>">
-          <button type="button" class="btn-wishlist td-book-wishlist" title="Yêu thích" data-tour-id="<?= (int) $tour['id'] ?>" data-tour-name="<?= $tourName ?>">
-            <i class="fas fa-heart"></i>
+          <button type="button" class="btn-wishlist td-book-wishlist" title="Yêu thích" aria-label="Yêu thích" aria-pressed="false" data-tour-id="<?= (int) $tour['id'] ?>" data-tour-name="<?= $tourName ?>">
+            <i class="far fa-heart" aria-hidden="true"></i>
           </button>
           <div class="td-book-price-block">
             <span class="td-book-price-label">Giá từ</span>

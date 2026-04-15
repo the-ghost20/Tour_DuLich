@@ -314,8 +314,8 @@ function durationFilterTag(string $duration): string
                   <div class="tour-card-overlay">
                     <a href="tour_detail.php?id=<?= $tourId ?>" class="tour-card-quick-view">Xem chi tiết</a>
                   </div>
-                  <button type="button" class="btn-wishlist btn-wishlist--card" title="Thêm vào yêu thích" aria-label="Thêm vào yêu thích">
-                    <i class="fas fa-heart"></i>
+                  <button type="button" class="btn-wishlist btn-wishlist--card" title="Thêm vào yêu thích" aria-label="Thêm vào yêu thích" aria-pressed="false">
+                    <i class="far fa-heart" aria-hidden="true"></i>
                   </button>
                 </div>
                 <div class="tour-card-content">
