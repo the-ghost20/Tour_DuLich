@@ -418,14 +418,27 @@ function initializeEventListeners() {
     }
   });
 
-  // Price Slider
+  // Price Slider — cập nhật giá + lọc ngay (không cần chỉ bấm "Áp dụng")
   if (priceSlider) {
-    priceSlider.addEventListener("input", updatePriceDisplay);
+    priceSlider.addEventListener("input", () => {
+      updatePriceDisplay();
+      readSidebarFiltersIntoState();
+      filterTours();
+    });
   }
+
+  document
+    .querySelectorAll('.sidebar .filter-section input[type="checkbox"]')
+    .forEach((cb) => {
+      cb.addEventListener("change", () => {
+        readSidebarFiltersIntoState();
+        filterTours();
+      });
+    });
 
   // Filter buttons
   if (applyFilterBtn) {
-    applyFilterBtn.addEventListener("click", applyFilters);
+    applyFilterBtn.addEventListener("click", () => applyFilters(true));
   }
   if (clearFilterBtn) {
     clearFilterBtn.addEventListener("click", clearFilters);
@@ -813,6 +826,22 @@ async function loadAboutStats() {
 function setupPriceSlider() {
   if (!priceSlider) return;
   updatePriceDisplay();
+  currentFilters.priceRange = parseInt(priceSlider.value, 10) || 0;
+}
+
+function readSidebarFiltersIntoState() {
+  currentFilters.destination = Array.from(
+    document.querySelectorAll('input[name="destination"]:checked'),
+  ).map((cb) => cb.value);
+  currentFilters.duration = Array.from(
+    document.querySelectorAll('input[name="duration"]:checked'),
+  ).map((cb) => cb.value);
+  currentFilters.tourType = Array.from(
+    document.querySelectorAll('input[name="tour-type"]:checked'),
+  ).map((cb) => cb.value);
+  if (priceSlider) {
+    currentFilters.priceRange = parseInt(priceSlider.value, 10) || 0;
+  }
 }
 
 function updatePriceDisplay() {
@@ -825,56 +854,39 @@ function updatePriceDisplay() {
 }
 
 // ========== Filter Functions ==========
-function applyFilters() {
-  // Get selected destinations
-  const destinationCheckboxes = document.querySelectorAll(
-    'input[name="destination"]:checked',
-  );
-  currentFilters.destination = Array.from(destinationCheckboxes).map(
-    (cb) => cb.value,
-  );
-
-  // Get selected durations
-  const durationCheckboxes = document.querySelectorAll(
-    'input[name="duration"]:checked',
-  );
-  currentFilters.duration = Array.from(durationCheckboxes).map(
-    (cb) => cb.value,
-  );
-
-  // Get selected tour types
-  const tourTypeCheckboxes = document.querySelectorAll(
-    'input[name="tour-type"]:checked',
-  );
-  currentFilters.tourType = Array.from(tourTypeCheckboxes).map(
-    (cb) => cb.value,
-  );
-
+function applyFilters(showToast = false) {
+  readSidebarFiltersIntoState();
   filterTours();
-  showNotification("Bộ lọc đã được áp dụng!", "success");
+  if (showToast) {
+    showNotification("Bộ lọc đã được áp dụng!", "success");
+  }
 }
 
 function clearFilters() {
-  // Reset all checkboxes
-  document.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-    cb.checked = false;
-  });
+  document
+    .querySelectorAll('.sidebar .filter-section input[type="checkbox"]')
+    .forEach((cb) => {
+      cb.checked = false;
+    });
 
-  // Reset price slider
   if (priceSlider) {
-    priceSlider.value = 5000000;
+    const maxVal =
+      parseInt(priceSlider.getAttribute("max") || "", 10) ||
+      parseInt(priceSlider.dataset.priceMax || "", 10) ||
+      5000000;
+    priceSlider.value = String(maxVal);
     updatePriceDisplay();
   }
 
-  // Reset search
   if (searchField) {
     searchField.value = "";
   }
 
-  // Reset filters object
   currentFilters = {
     destination: [],
-    priceRange: 5000000,
+    priceRange: priceSlider
+      ? parseInt(priceSlider.value, 10) || 0
+      : 5000000,
     duration: [],
     tourType: [],
     searchQuery: "",
@@ -887,38 +899,47 @@ function clearFilters() {
 function filterTours() {
   if (!toursGrid) return;
 
-  const tours = document.querySelectorAll(".tour-card");
+  const tours = toursGrid.querySelectorAll(".tour-card");
+  if (tours.length === 0) return;
+
+  toursGrid.querySelectorAll(".tours-filter-empty").forEach((el) => el.remove());
+
   let visibleCount = 0;
+  const searchQuery = currentFilters.searchQuery.trim().toLowerCase();
 
   tours.forEach((tour) => {
-    // Get tour attributes
-    const tourDestination = tour.getAttribute("data-destination") || "";
-    const tourPrice = parseInt(
-      tour.querySelector(".tour-price").textContent.replace(/\D/g, ""),
-    );
+    const tourDestination = (tour.getAttribute("data-destination") || "").toLowerCase();
+    const regionKeys = (tour.getAttribute("data-filter-regions") || "").toLowerCase();
+    const haystack = `${regionKeys} ${tourDestination}`;
+    const tourPrice = parseInt(tour.getAttribute("data-price") || "0", 10);
     const tourDuration = tour.getAttribute("data-duration") || "";
-    const tourType = tour.getAttribute("data-type") || "";
-    const tourName = tour.querySelector("h3").textContent.toLowerCase();
-    const searchQuery = currentFilters.searchQuery.toLowerCase();
+    const typeTags = (tour.getAttribute("data-tour-tags") || "")
+      .split(/\s+/)
+      .filter(Boolean);
+    const searchBlob =
+      (tour.getAttribute("data-search-text") || "").toLowerCase() ||
+      (tour.querySelector("h3")?.textContent || "").toLowerCase();
 
-    // Check filters
     const destinationMatch =
       currentFilters.destination.length === 0 ||
-      currentFilters.destination.some((d) => tourDestination.includes(d));
+      currentFilters.destination.some((key) => {
+        const k = key.toLowerCase();
+        return haystack.includes(k);
+      });
 
     const priceMatch = tourPrice <= currentFilters.priceRange;
 
     const durationMatch =
       currentFilters.duration.length === 0 ||
-      currentFilters.duration.some((d) => tourDuration.includes(d));
+      currentFilters.duration.some((d) => d === tourDuration);
 
     const typeMatch =
       currentFilters.tourType.length === 0 ||
-      currentFilters.tourType.some((t) => tourType.includes(t));
+      currentFilters.tourType.some((t) => typeTags.includes(t));
 
-    const searchMatch = searchQuery === "" || tourName.includes(searchQuery);
+    const searchMatch =
+      searchQuery === "" || searchBlob.includes(searchQuery);
 
-    // Show/hide tour
     const shouldShow =
       destinationMatch &&
       priceMatch &&
@@ -932,26 +953,22 @@ function filterTours() {
     }
   });
 
-  // Show empty state if needed
-  if (visibleCount === 0 && toursGrid) {
-    if (!document.querySelector(".empty-state")) {
-      const emptyState = document.createElement("div");
-      emptyState.className = "empty-state";
-      emptyState.innerHTML = `
+  if (visibleCount === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "empty-state tours-filter-empty";
+    emptyState.innerHTML = `
         <i class="fas fa-inbox"></i>
         <h3>Không tìm thấy tour phù hợp</h3>
         <p>Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
       `;
-      toursGrid.appendChild(emptyState);
-    }
-  } else if (document.querySelector(".empty-state")) {
-    document.querySelector(".empty-state").remove();
+    toursGrid.appendChild(emptyState);
   }
 }
 
 // ========== Search & Sort Functions ==========
 function handleSearch(e) {
   currentFilters.searchQuery = e.target.value;
+  readSidebarFiltersIntoState();
   filterTours();
 }
 
@@ -972,30 +989,18 @@ function handleSort(e) {
   const sortValue = e.target.value;
   if (!toursGrid) return;
 
-  const tours = Array.from(document.querySelectorAll(".tour-card"));
+  const tours = Array.from(toursGrid.querySelectorAll(".tour-card"));
+  const emptyMsg = toursGrid.querySelector(".tours-filter-empty");
+
+  const priceOf = (card) =>
+    parseInt(card.getAttribute("data-price") || "0", 10);
 
   switch (sortValue) {
     case "price-low":
-      tours.sort(
-        (a, b) =>
-          parseInt(
-            a.querySelector(".tour-price").textContent.replace(/\D/g, ""),
-          ) -
-          parseInt(
-            b.querySelector(".tour-price").textContent.replace(/\D/g, ""),
-          ),
-      );
+      tours.sort((a, b) => priceOf(a) - priceOf(b));
       break;
     case "price-high":
-      tours.sort(
-        (a, b) =>
-          parseInt(
-            b.querySelector(".tour-price").textContent.replace(/\D/g, ""),
-          ) -
-          parseInt(
-            a.querySelector(".tour-price").textContent.replace(/\D/g, ""),
-          ),
-      );
+      tours.sort((a, b) => priceOf(b) - priceOf(a));
       break;
     case "rating":
       tours.sort(
@@ -1005,17 +1010,27 @@ function handleSort(e) {
       );
       break;
     case "newest":
-      tours.reverse();
+      tours.sort(
+        (a, b) =>
+          parseInt(b.getAttribute("data-tour-id") || "0", 10) -
+          parseInt(a.getAttribute("data-tour-id") || "0", 10),
+      );
       break;
     default:
-      // Keep default order
+      tours.sort(
+        (a, b) =>
+          parseInt(b.getAttribute("data-tour-id") || "0", 10) -
+          parseInt(a.getAttribute("data-tour-id") || "0", 10),
+      );
       break;
   }
 
-  toursGrid.innerHTML = "";
-  tours.forEach((tour) => {
-    toursGrid.appendChild(tour);
-  });
+  tours.forEach((tour) => toursGrid.appendChild(tour));
+  if (emptyMsg) {
+    toursGrid.appendChild(emptyMsg);
+  }
+
+  filterTours();
 }
 
 // ========== Wishlist Functions ==========
@@ -1026,6 +1041,7 @@ function initToursUrlSearch() {
   if (q) {
     searchField.value = q;
     currentFilters.searchQuery = q;
+    readSidebarFiltersIntoState();
     filterTours();
   }
 }

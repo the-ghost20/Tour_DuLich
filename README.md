@@ -22,12 +22,12 @@
 - **Trang chủ, giới thiệu, bảng giá, FAQ, điều khoản, chính sách, hướng dẫn, liên hệ**
 - **Danh sách tour** (`tours.php`): lọc theo điểm đến, giá, thời lượng, loại hình, tìm kiếm
 - **Chi tiết tour** (`tour_detail.php`): ảnh/gallery, lịch trình (itinerary), lịch khởi hành, đặt chỗ
-- **Đặt tour** (`booking.php`, `booking_confirm.php`, …): chọn ngày, áp mã coupon, phụ thu ngày lễ (nếu cấu hình)
-- **Thanh toán / kết quả** (`payment.php`, `payment_result.php`)
-- **Đơn của tôi** (`my_bookings.php`, `booking_detail.php`), **yêu thích** (`wishlist.php`)
-- **Đánh giá tour** (`review.php`)
+- **Đặt tour** (`booking.php`), **báo giá / tóm tắt** (`booking_quote.php`): chọn ngày, áp mã coupon, phụ thu ngày lễ (nếu cấu hình)
+- **Thanh toán chuyển khoản** (`payment.php`, cấu hình `includes/payment_bank.php`): xem thông tin ngân hàng, xác nhận đã chuyển (cập nhật trạng thái đơn tùy luồng)
+- **Đơn của tôi** (`my_bookings.php`), **yêu thích** (`wishlist.php`)
+- **Đánh giá tour** (form trên `tour_detail.php`, lưu `tour_reviews`)
 - **Blog** (`blog.php`, `blog_detail.php`): tìm kiếm/lọc danh mục client-side, phản hồi blog
-- **Hồ sơ** (`profile.php`), đổi mật khẩu (`change_password.php`)
+- **Hồ sơ & đổi mật khẩu** (`profile.php`)
 
 ### Xác thực (`auth/`)
 
@@ -56,37 +56,58 @@
 
 - **Backend:** PHP, PDO, session
 - **Cơ sở dữ liệu:** MySQL/MariaDB (`utf8mb4`)
-- **Frontend:** HTML5, CSS (`assets/css/style.css`, `admin.css`, `staff.css`), JavaScript (`assets/js/main.js`; thêm `admin.js` nếu có trong dự án)
+- **Frontend:** HTML5, CSS (`assets/css/style.css`, `admin.css`, `staff.css`), JavaScript (`assets/js/main.js`)
 - **Icon:** Font Awesome (CDN trên một số trang)
 
 ---
 
 ## Cấu trúc thư mục
 
-**Bản đầy đủ (file nào giữ, SQL nào khi nào, file đã dọn):** kéo xuống mục **« Cấu trúc project Tour_DuLich »** ở **cuối README**, hoặc **[`docs/STRUCTURE.md`](docs/STRUCTURE.md)** (link về README).
+**Bản đầy đủ (file nào giữ, SQL nào khi nào):** mục **« Cấu trúc project Tour_DuLich »** ở **cuối README**.
 
 Tóm tắt:
 
 ```text
 Tour_DuLich/
 ├── README.md
-├── docs/STRUCTURE.md           # Bản đồ thư mục & hướng dẫn SQL
 ├── config/database.php         # → includes/db.php
-├── includes/                   # DB, config, migration, layout, helper
+├── includes/                   # DB, config, migration, layout, helper (booking_slots, payment_bank, …)
 ├── assets/                     # css / js (main.js) / images
 ├── frontend/                   # Trang khách
 ├── auth/                       # Đăng nhập, đăng ký, demo_account_setup
 ├── admin/                      # Quản trị
 ├── staff/                      # Nhân viên
 ├── uploads/                    # Upload ảnh (runtime)
-└── database/                   # tour_management.sql, sample_data.sql, migrations/, script demo
+└── database/                   # tour_management.sql, sample_data.sql, migrations/, dev-scripts/
 ```
 
 ### Các bảng chính (schema gốc)
 
 `categories`, `users`, `tours`, `bookings`, `tour_reviews`, `blog_feedback`, `coupons`, `blog_posts` — xem định nghĩa đầy đủ trong `database/tour_management.sql`.
 
-Khi ứng dụng chạy, `includes/db.php` có thể **tự thêm cột** (itinerary, gallery, blog meta, cột booking coupon/departure, …) nếu database cũ chưa import hết file trong `database/migrations/`. Cơ chế này idempotent (an toàn chạy lại).
+Khi ứng dụng chạy, `includes/db.php` có thể **tự thêm cột** (itinerary, gallery, blog meta, cột booking coupon/departure, `paid_at` cho đơn đã thanh toán, …) nếu database cũ chưa import hết file trong `database/migrations/`. Cơ chế này idempotent (an toàn chạy lại).
+
+---
+
+## Danh sách file mã nguồn (in / đính kèm Word, báo cáo)
+
+Dùng danh sách dưới đây khi cần **trích đoạn code** hoặc **mục lục phụ lục** trong tài liệu Word. Nhóm theo vai trò trong hệ thống:
+
+| Nhóm | Đường dẫn (file chính) |
+|------|-------------------------|
+| **Cấu hình & lõi** | `includes/config.php`, `includes/db.php`, `includes/functions.php`, `includes/session.php`, `config/database.php`, `includes/schema_migrations.php` |
+| **Đặt chỗ & giá** | `includes/booking_slots.php`, `includes/booking_pricing.php`, `includes/booking_holidays.php`, `includes/booking_modal.php`, `frontend/booking.php`, `frontend/booking_quote.php` |
+| **Thanh toán** | `includes/payment_bank.php`, `frontend/payment.php` |
+| **Tour & nội dung** | `includes/tour_itinerary.php`, `includes/tour_itinerary_defaults.php`, `includes/tour_content_helpers.php`, `frontend/tours.php`, `frontend/tour_detail.php`, `frontend/index.php` |
+| **Khách (còn lại)** | `frontend/my_bookings.php`, `frontend/wishlist.php`, `frontend/blog.php`, `frontend/blog_detail.php`, `frontend/profile.php`, các trang tĩnh `about.php`, `faq.php`, `pricing.php`, `guide.php`, `terms.php`, `privacy.php` |
+| **Auth** | `auth/login.php`, `auth/register.php`, `auth/logout.php`, `auth/forgot_password.php`, `auth/demo_account_setup.php` |
+| **Admin** | `admin/index.php`, `admin/tours/*.php`, `admin/bookings/*.php`, `admin/cancel_requests/*.php`, `admin/users/*.php`, `admin/staff/*.php`, `admin/coupons/*.php`, `admin/categories/*.php`, `admin/blog/*.php`, `admin/reviews/list.php`, `admin/reports/*.php`, `admin/settings/index.php` |
+| **Staff** | `staff/index.php`, `staff/bookings/*.php`, `staff/tours/update_slots.php`, `staff/blog/*.php`, `staff/reviews/list.php`, `staff/contact/list.php`, `staff/profile.php` |
+| **Giao diện chung** | `includes/header.php`, `includes/footer.php`, `includes/admin_header.php`, `includes/admin_footer.php`, `includes/staff_header.php`, `includes/staff_footer.php`, `assets/css/style.css`, `assets/css/admin.css`, `assets/css/staff.css`, `assets/js/main.js` |
+| **Blog / email** | `includes/blog_helpers.php`, `includes/blog_listing_fragment.php`, `includes/blog_articles.php`, `includes/mailer.php` |
+| **CSDL** | `database/tour_management.sql`, `database/sample_data.sql`, `database/migrations/*.sql`, `database/tour_itinerary_seed.sql`, `database/dev-scripts/*` |
+
+**Gợi ý:** với báo cáo ngắn, ưu tiên in/ghi chú: `config.php` + `db.php`, một luồng `booking.php` → `booking_quote.php` → `payment.php`, và `tour_management.sql` (sơ đồ bảng).
 
 ---
 
@@ -123,7 +144,7 @@ Khi ứng dụng chạy, `includes/db.php` có thể **tự thêm cột** (itine
 | Staff | `staff.dulichviet@gmail.com` | `password` |
 | Khách | `user1.dulichviet@gmail.com` … `user4.dulichviet@gmail.com` | `password` |
 
-Nếu database cũ vẫn dùng email `*@dulichviet.test`, có thể chạy `database/update_demo_emails.sql` để đổi sang các địa chỉ Gmail trên (không đổi mật khẩu).
+Nếu database cũ vẫn dùng email `*@dulichviet.test`, có thể chạy `database/dev-scripts/update_demo_emails.sql` để đổi sang các địa chỉ Gmail trên (không đổi mật khẩu).
 
 **Không đăng nhập được với email Gmail mới?** File trong repo chỉ là mã nguồn — MySQL trên máy bạn **không tự đổi** cho đến khi bạn import lại `sample_data.sql` hoặc chạy SQL cập nhật.
 
@@ -240,11 +261,8 @@ Tài liệu này giúp đọc cây thư mục nhanh: **thư mục cốt lõi**, 
 
 ```text
 Tour_DuLich/
-├── README.md                 # Hướng dẫn cài đặt & chạy
-├── docs/
-│   └── STRUCTURE.md          # File này — bản đồ thư mục
+├── README.md                 # Hướng dẫn cài đặt & chạy (kèm bản đồ thư mục ở cuối)
 ├── .gitignore                # Bỏ qua .DS_Store, cờ demo setup, …
-├── run.sh                    # (Tuỳ chọn) PHP built-in server cổng 8080
 │
 ├── config/
 │   └── database.php          # Giữ — trỏ tới includes/db.php (một điểm cấu hình)
@@ -273,7 +291,6 @@ Tour_DuLich/
 | **`staff/`** | Có | Module nhân viên (đơn, blog, tour slots, …). |
 | **`config/`** | Có | Chủ yếu `database.php` → `includes/db.php`. |
 | **`database/`** | Có | SQL và migration — **không xóa**; chỉ cần biết **khi nào chạy file nào** (mục dưới). |
-| **`docs/`** | Có | Tài liệu cấu trúc (file này). |
 | **`uploads/`** | Có (thư mục) | Ảnh do admin upload; nội dung có thể không commit tùy team. |
 
 ---
@@ -294,7 +311,7 @@ Tour_DuLich/
 |------|----------------|
 | **`tour_management.sql`** | Lần đầu: tạo DB + bảng. |
 | **`sample_data.sql`** | Sau đó: dữ liệu mẫu (user, tour, booking, blog, …) — **đã gồm khối UPDATE lịch trình (itinerary) cho tour mẫu**. |
-| **`migrations/*.sql`** | DB cũ thiếu cột / bảng: import từng file theo số thứ tự **hoặc** để app tự `ALTER` khi chạy (xem `includes/schema_migrations.php`). |
+| **`migrations/*.sql`** | DB cũ thiếu cột / bảng: import từng file theo số thứ tự **hoặc** để app tự `ALTER` khi chạy (xem `includes/schema_migrations.php`). Ví dụ `005_bookings_paid_at.sql` bổ sung thời điểm thanh toán. |
 | **`tour_itinerary_seed.sql`** | **Tuỳ chọn / trùng phần lớn với `sample_data`** nếu bạn đã import sample đầy đủ. Hữu ích khi chỉ muốn **nạp lại lịch trình** mà không import cả sample. |
 | **`database/dev-scripts/fix_demo_accounts.sql`** | Một lệnh SQL: set email Gmail + hash mật khẩu `password` cho user id 1–6 (khi đăng nhập demo lệch). |
 | **`database/dev-scripts/update_demo_emails.sql`** | Chỉ đổi email từ `@dulichviet.test` → Gmail (không đổi hash). |
@@ -308,8 +325,6 @@ Tour_DuLich/
 
 | File | Lý do |
 |------|--------|
-| `frontend/blog_post.php` | Redirect 301 → `blog_detail.php` — giữ link/bookmark cũ. |
-| `admin/bookings.php` | Redirect → `bookings/list.php`. |
 | `includes/blog_articles.php` | Fallback nội dung blog khi DB không có bài (`blog_detail.php`). |
 | `auth/demo_account_setup.php` | Công cụ reset tài khoản demo qua trình duyệt. |
 
@@ -318,7 +333,6 @@ Tour_DuLich/
 ## JavaScript — file thực sự dùng
 
 - **`assets/js/main.js`** — Trang khách: menu, tour filter, booking modal, wishlist, …  
-- **`assets/js/admin.js`** — Chỉ khi còn file trong repo (một số bản đã gộp / bỏ).  
 
 Không còn `filter.js` (đã dọn).
 
@@ -331,4 +345,4 @@ Không còn `filter.js` (đã dọn).
 
 ---
 
-© Cập nhật cùng repo Tour_DuLich — đọc kèm `README.md` phần cài đặt và tài khoản mẫu.
+© Cập nhật cùng repo Tour_DuLich — phần cài đặt và tài khoản mẫu nằm ở đầu file `README.md` này.

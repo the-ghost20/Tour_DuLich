@@ -31,17 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$row) {
         $flash     = 'Không tìm thấy đơn đặt tour.';
         $flashType = 'error';
-    } elseif ($action === 'pay') {
-        if ((string) $row['status'] !== 'chờ duyệt') {
-            $flash     = 'Chỉ có thể thanh toán khi đơn đang chờ duyệt.';
-            $flashType = 'error';
-        } else {
-            $stmtPay = $pdo->prepare(
-                "UPDATE bookings SET status = 'đã thanh toán' WHERE id = :id AND user_id = :uid"
-            );
-            $stmtPay->execute(['id' => $bookingId, 'uid' => $userId]);
-            $flash = 'Thanh toán thành công! Đơn đặt tour của bạn đã được cập nhật.';
-        }
     } elseif ($action === 'cancel') {
         $reason = trim((string) ($_POST['cancel_reason'] ?? ''));
         $status = (string) $row['status'];
@@ -101,7 +90,7 @@ $bookings = [];
 try {
     $stmt = $pdo->prepare(
         "SELECT b.id, b.adults, b.children, b.total_amount, b.status,
-                b.cancel_reason, b.created_at,
+                b.cancel_reason, b.created_at, b.paid_at,
                 b.departure_date, b.coupon_code, b.discount_amount,
                 b.holiday_surcharge_percent, b.holiday_surcharge_amount,
                 t.tour_name, t.destination, t.duration
@@ -543,6 +532,12 @@ function statusMeta(string $status): array {
                 <span class="label"><i class="fas fa-calendar-check"></i> Ngày đặt</span>
                 <span class="value"><?= $dateStr ?></span>
               </div>
+              <?php if ($status === 'đã thanh toán' && !empty($booking['paid_at'])): ?>
+              <div class="booking-info-row">
+                <span class="label"><i class="fas fa-check-double"></i> Xác nhận thanh toán</span>
+                <span class="value"><?= date('d/m/Y H:i', strtotime((string) $booking['paid_at'])) ?></span>
+              </div>
+              <?php endif; ?>
               <?php
                 $depRaw = $booking['departure_date'] ?? null;
                 $depStr = $depRaw ? date('d/m/Y', strtotime((string) $depRaw)) : '—';
@@ -601,15 +596,10 @@ function statusMeta(string $status): array {
             <div class="booking-card-footer">
               <?php if ($status === 'chờ duyệt'): ?>
 
-                <!-- Pay button -->
-                <form method="post" action="" style="flex:1;">
-                  <input type="hidden" name="action"     value="pay" />
-                  <input type="hidden" name="booking_id" value="<?= $bId ?>" />
-                  <button type="submit" class="btn-pay"
-                    onclick="return confirm('Xác nhận thanh toán đơn #<?= $bId ?>?')">
-                    <i class="fas fa-credit-card"></i> Thanh toán
-                  </button>
-                </form>
+                <!-- Thanh toán QR -->
+                <a href="payment.php?booking_id=<?= $bId ?>" class="btn-pay" style="flex:1;text-decoration:none;box-sizing:border-box;">
+                  <i class="fas fa-qrcode"></i> Thanh toán QR
+                </a>
 
                 <!-- Gửi yêu cầu hủy (chờ quản trị duyệt) -->
                 <button type="button" class="btn-cancel-open"

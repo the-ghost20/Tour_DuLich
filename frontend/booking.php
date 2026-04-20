@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/booking_pricing.php';
+require_once __DIR__ . '/../includes/booking_slots.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -64,25 +65,32 @@ if ($adults < 1) {
 }
 
 try {
+    $guests = booking_guest_total($adults, $children);
+
+    $pdo->beginTransaction();
+
     $stmtTour = $pdo->prepare(
-        "SELECT id, tour_name, price, available_slots, status FROM tours WHERE id = :id LIMIT 1"
+        "SELECT id, tour_name, price, available_slots, status FROM tours WHERE id = :id LIMIT 1 FOR UPDATE"
     );
     $stmtTour->execute(['id' => $tourId]);
     $tour = $stmtTour->fetch(PDO::FETCH_ASSOC);
 
     if (!$tour) {
+        $pdo->rollBack();
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Tour không tồn tại.']);
         exit;
     }
 
     if ((string) $tour['status'] !== 'hiện') {
+        $pdo->rollBack();
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Tour hiện không khả dụng.']);
         exit;
     }
 
-    if ((int) $tour['available_slots'] < ($adults + $children)) {
+    if ((int) $tour['available_slots'] < $guests) {
+        $pdo->rollBack();
         http_response_code(400);
         echo json_encode([
             'success' => false,
@@ -95,8 +103,6 @@ try {
     $baseSubtotal = booking_subtotal($pricePerPerson, $adults, $children);
     $h = booking_holiday_addon($baseSubtotal, $departureYmd);
     $grossSubtotal = $h['subtotal'];
-
-    $pdo->beginTransaction();
 
     $discountAmount = 0.0;
     $couponStored = null;
@@ -164,6 +170,16 @@ try {
         'hamt'     => $holidayAmt,
         'total'    => $totalAmount,
     ]);
+
+    if (!booking_consume_tour_slots($pdo, $tourId, $guests)) {
+        $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Hết chỗ trống cho tour (vui lòng chọn số khách nhỏ hơn hoặc tour khác).',
+        ]);
+        exit;
+    }
 
     if ($couponIdApplied !== null) {
         $pdo->prepare('UPDATE coupons SET used_count = used_count + 1 WHERE id = :id')

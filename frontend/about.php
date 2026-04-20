@@ -16,10 +16,9 @@ try {
     $statBookings = (int) $pdo->query(
         'SELECT COUNT(*) FROM bookings'
     )->fetchColumn();
-    $row = $pdo->query(
-        "SELECT SUM(status = 'hiện') AS visible FROM tours"
-    )->fetch();
-    $statToursOnSale = (int) ($row['visible'] ?? 0);
+    $statToursOnSale = (int) $pdo->query(
+        'SELECT COUNT(*) FROM tours WHERE ' . tour_sql_public_visible()
+    )->fetchColumn();
 } catch (Throwable) {
     // Giữ 0 nếu truy vấn lỗi
 }

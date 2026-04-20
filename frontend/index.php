@@ -7,11 +7,11 @@ $hotTours = [];
 
 try {
     $stmt = $pdo->prepare(
-        "SELECT id, tour_name, price, image_url
+        'SELECT id, tour_name, price, image_url
          FROM tours
-         WHERE status = 'hiện'
+         WHERE ' . tour_sql_public_visible() . '
          ORDER BY id DESC
-         LIMIT 6"
+         LIMIT 6'
     );
     $stmt->execute();
     $hotTours = $stmt->fetchAll();

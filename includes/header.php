@@ -27,31 +27,31 @@ $isStaff  = $isLoggedIn && $userRole === 'staff';
 $isCustomerNav = !$isLoggedIn || (!$isAdmin && !$isStaff);
 ?>
 <!-- NAVIGATION BAR -->
-<nav class="navbar">
+<nav class="navbar" aria-label="Điều hướng chính">
   <div class="navbar-container">
     <div class="navbar-start">
     <a href="<?= htmlspecialchars($u . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="navbar-logo">
-      <i class="fas fa-map-marker-alt"></i>
-      <span>Du lịch Việt</span>
+      <span class="navbar-logo-mark" aria-hidden="true"><i class="fas fa-map-marker-alt"></i></span>
+      <span class="navbar-logo-text">Du lịch Việt</span>
     </a>
 
     <ul class="navbar-menu">
-      <li><a href="<?= htmlspecialchars($u . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>">TRANG CHỦ</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'about.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'about' ? 'active' : '' ?>">GIỚI THIỆU</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'tours.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'tours' ? 'active' : '' ?>">TOUR DU LỊCH</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'pricing.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'pricing' ? 'active' : '' ?>">BẢNG GIÁ</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'blog.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'blog' ? 'active' : '' ?>">BLOG</a></li>
+      <li><a href="<?= htmlspecialchars($u . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>">Trang chủ</a></li>
+      <li><a href="<?= htmlspecialchars($u . 'about.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'about' ? 'active' : '' ?>">Giới thiệu</a></li>
+      <li><a href="<?= htmlspecialchars($u . 'tours.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'tours' ? 'active' : '' ?>">Tour</a></li>
+      <li><a href="<?= htmlspecialchars($u . 'pricing.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'pricing' ? 'active' : '' ?>">Bảng giá</a></li>
+      <li><a href="<?= htmlspecialchars($u . 'blog.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'blog' ? 'active' : '' ?>">Blog</a></li>
       <?php if ($isCustomerNav): ?>
-      <li><a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'wishlist' ? 'active' : '' ?>">YÊU THÍCH</a></li>
+      <li><a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'wishlist' ? 'active' : '' ?>">Yêu thích</a></li>
       <?php endif; ?>
-      <li><a href="#contact" class="nav-link">LIÊN HỆ</a></li>
+      <li><a href="#contact" class="nav-link">Liên hệ</a></li>
     </ul>
     </div>
 
     <div class="navbar-right">
       <div class="search-box">
-        <input type="text" placeholder="Tra cứu..." class="search-input" />
-        <i class="fas fa-search"></i>
+        <input type="search" placeholder="Tìm tour, điểm đến…" class="search-input" autocomplete="off" />
+        <i class="fas fa-search" aria-hidden="true"></i>
       </div>
       <?php if (!$isLoggedIn): ?>
         <div class="auth-header-actions">

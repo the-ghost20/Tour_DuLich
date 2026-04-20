@@ -48,7 +48,7 @@ $departureYmd = $departure->format('Y-m-d');
 
 try {
     $stmtTour = $pdo->prepare(
-        "SELECT id, price, status FROM tours WHERE id = :id LIMIT 1"
+        'SELECT id, price, status, available_slots FROM tours WHERE id = :id LIMIT 1'
     );
     $stmtTour->execute(['id' => $tourId]);
     $tour = $stmtTour->fetch(PDO::FETCH_ASSOC);
@@ -57,9 +57,12 @@ try {
         echo json_encode(['success' => false, 'message' => 'Tour không tồn tại.']);
         exit;
     }
-    if ((string) $tour['status'] !== 'hiện') {
+    if (!tour_is_publicly_bookable($tour)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Tour hiện không khả dụng.']);
+        $msg = ((string) $tour['status'] === 'hiện' && (int) $tour['available_slots'] <= 0)
+            ? 'Tour đã hết chỗ.'
+            : 'Tour hiện không khả dụng.';
+        echo json_encode(['success' => false, 'message' => $msg]);
         exit;
     }
 

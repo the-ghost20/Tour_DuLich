@@ -14,15 +14,21 @@ $tours = [];
 
 try {
     $stmt = $pdo->prepare(
-        "SELECT id, tour_name, description, destination, duration, price, image_url, available_slots
+        'SELECT id, tour_name, description, destination, duration, price, image_url, available_slots
          FROM tours
-         WHERE status = 'hiện'
-         ORDER BY id DESC"
+         WHERE ' . tour_sql_public_visible() . '
+         ORDER BY id DESC'
     );
     $stmt->execute();
     $tours = $stmt->fetchAll();
 } catch (Throwable $exception) {
     $tours = [];
+}
+
+$tourPriceSliderMax = 20000000;
+if (!empty($tours)) {
+    $maxP = max(array_map(static fn(array $t): float => (float) $t['price'], $tours));
+    $tourPriceSliderMax = max(5000000, (int) (ceil($maxP / 250000) * 250000));
 }
 
 function slugify(string $value): string
@@ -63,6 +69,60 @@ function durationFilterTag(string $duration): string
         }
     }
     return '4-day';
+}
+
+/** Các khóa khớp checkbox địa điểm trong sidebar (slug + từ khóa). */
+function filterDestinationKeys(string $destination): string
+{
+    $d  = mb_strtolower(trim($destination), 'UTF-8');
+    $keys = [];
+    $slug = slugify($destination);
+    if ($slug !== '') {
+        $keys[] = $slug;
+    }
+    if (preg_match('/hạ\s*long|ha\s*long|vịnh\s*hạ\s*long/i', $d) || str_contains($slug, 'ha-long')) {
+        $keys[] = 'ha-long';
+    }
+    if (preg_match('/phú\s*quốc|phu\s*quoc/i', $d) || str_contains($slug, 'phu-quoc')) {
+        $keys[] = 'phu-quoc';
+    }
+    if (preg_match('/sài\s*gòn|sai\s*gon|hồ\s*chí\s*minh|tp\.?\s*hcm|hcm\b/i', $d)) {
+        $keys[] = 'sai-gon';
+    }
+    if (preg_match('/mù\s*cang\s*chai|mu\s*cang\s*chai/i', $d)) {
+        $keys[] = 'mu-cang-chai';
+    }
+    if (preg_match('/vũng\s*tàu|vung\s*tau/i', $d)) {
+        $keys[] = 'vung-tau';
+    }
+    if (preg_match('/miền\s*tây|mien\s*tay|cần\s*thơ|bến\s*tre|an\s*giang|châu\s*đốc|cà\s*mau|sóc\s*trăng/i', $d)) {
+        $keys[] = 'mien-tay';
+    }
+    return implode(' ', array_unique($keys));
+}
+
+/** Tag loại tour: domestic | international + beach | adventure | cultural */
+function filterTourTypeTags(string $destination, string $tourName, string $description = ''): string
+{
+    $blob = mb_strtolower($destination . ' ' . $tourName . ' ' . $description, 'UTF-8');
+    $tags = [];
+    $intl = (bool) preg_match(
+        '/singapore|trung quốc|thượng hải|hàng châu|thái lan|thailand|nhật bản|japan|malaysia|indonesia|pháp|paris|úc|australia|quốc tế|international|campuchia|lào|myanmar|đài loan|taiwan|hàn quốc|korea/i',
+        $blob
+    );
+    $tags[] = $intl ? 'international' : 'domestic';
+
+    if (preg_match('/biển|phú quốc|nha trang|đảo|vịnh|bãi|san hô|vinpearl|lặn|mỹ khê/i', $blob)) {
+        $tags[] = 'beach';
+    }
+    if (preg_match('/núi|sapa|fansipan|mạo hiểm|trek|đèo|jeep|bản làng|cáp treo/i', $blob)) {
+        $tags[] = 'adventure';
+    }
+    if (preg_match('/cố đô|huế|văn hóa|di sản|đại nội|chùa|đình|bảo tàng|phố cổ|hội an|động|hang/i', $blob)) {
+        $tags[] = 'cultural';
+    }
+
+    return implode(' ', array_unique($tags));
 }
 ?>
 <!doctype html>
@@ -165,13 +225,14 @@ function durationFilterTag(string $duration): string
                 id="price-slider"
                 name="price-range"
                 min="0"
-                max="5000000"
-                value="5000000"
+                max="<?= (int) $tourPriceSliderMax ?>"
+                value="<?= (int) $tourPriceSliderMax ?>"
                 class="slider"
+                data-price-max="<?= (int) $tourPriceSliderMax ?>"
               />
               <div class="price-display">
                 <span
-                  >Tối đa: <strong id="price-value">5.000.000 đ</strong></span
+                  >Tối đa: <strong id="price-value"><?= number_format((int) $tourPriceSliderMax, 0, ',', '.') ?> đ</strong></span
                 >
               </div>
             </div>
@@ -286,6 +347,7 @@ function durationFilterTag(string $duration): string
                 $tourName = htmlspecialchars((string) $tour['tour_name'], ENT_QUOTES, 'UTF-8');
                 $destination = htmlspecialchars((string) $tour['destination'], ENT_QUOTES, 'UTF-8');
                 $duration = htmlspecialchars((string) $tour['duration'], ENT_QUOTES, 'UTF-8');
+                $descRaw = isset($tour['description']) ? (string) $tour['description'] : '';
                 $priceText = number_format((float) $tour['price'], 0, ',', '.') . ' đ';
                 $imageUrl = !empty($tour['image_url'])
                     ? htmlspecialchars((string) $tour['image_url'], ENT_QUOTES, 'UTF-8')
@@ -293,13 +355,25 @@ function durationFilterTag(string $duration): string
                 $tourId = (int) $tour['id'];
                 $slots = isset($tour['available_slots']) ? (int) $tour['available_slots'] : 0;
                 $slotsLow = $slots > 0 && $slots <= 12;
+                $destSlug = slugify((string) $tour['destination']);
+                $regionKeys = htmlspecialchars(filterDestinationKeys((string) $tour['destination']), ENT_QUOTES, 'UTF-8');
+                $typeTags = htmlspecialchars(filterTourTypeTags((string) $tour['destination'], (string) $tour['tour_name'], $descRaw), ENT_QUOTES, 'UTF-8');
+                $dataSearch = htmlspecialchars(
+                    mb_strtolower((string) $tour['tour_name'] . ' ' . (string) $tour['destination'], 'UTF-8'),
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+                $priceNum = (int) round((float) $tour['price']);
               ?>
               <article
                 class="tour-card"
                 data-tour-id="<?= $tourId ?>"
-                data-destination="<?= slugify((string) $tour['destination']) ?>"
+                data-destination="<?= htmlspecialchars($destSlug, ENT_QUOTES, 'UTF-8') ?>"
+                data-filter-regions="<?= $regionKeys ?>"
+                data-search-text="<?= $dataSearch ?>"
+                data-price="<?= $priceNum ?>"
                 data-duration="<?= durationFilterTag((string) $tour['duration']) ?>"
-                data-type="domestic"
+                data-tour-tags="<?= $typeTags ?>"
                 data-rating="4.5"
               >
                 <div class="tour-card-image">
@@ -371,12 +445,9 @@ function durationFilterTag(string $duration): string
 
     <?php require __DIR__ . '/../includes/booking_modal.php'; ?>
 
-    <?php require __DIR__ . '/../includes/footer.php'; ?>
-
     <script>
-      // Truyền trạng thái đăng nhập từ PHP session xuống JS
       window.__PHP_IS_LOGGED_IN__ = <?= $_jsIsLoggedIn ?>;
     </script>
-    <script src="../assets/js/main.js?v=10"></script>
+    <?php require __DIR__ . '/../includes/footer.php'; ?>
   </body>
 </html>

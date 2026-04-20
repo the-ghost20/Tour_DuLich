@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/includes/db.php';
+require_once dirname(__DIR__, 2) . '/includes/booking_slots.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -24,11 +25,23 @@ $ok = ['đã xác nhận', 'đã thanh toán'];
 
 if ($bid > 0 && ($action === 'approve' || $action === 'reject')) {
     try {
-        $chk = $pdo->prepare("SELECT status FROM bookings WHERE id = :id LIMIT 1");
+        $pdo->beginTransaction();
+        $chk = $pdo->prepare(
+            'SELECT id, tour_id, adults, children, status FROM bookings WHERE id = :id LIMIT 1 FOR UPDATE'
+        );
         $chk->execute(['id' => $bid]);
-        $st = $chk->fetchColumn();
-        if ($st === 'yêu cầu hủy') {
+        $row = $chk->fetch(PDO::FETCH_ASSOC);
+        $st  = $row ? (string) $row['status'] : '';
+        if ($st === 'yêu cầu hủy' && $row) {
             if ($action === 'approve') {
+                $guests = booking_guest_total((int) $row['adults'], (int) $row['children']);
+                booking_release_slots_if_cancelled(
+                    $pdo,
+                    $st,
+                    'đã hủy',
+                    (int) $row['tour_id'],
+                    $guests
+                );
                 $pdo->prepare("UPDATE bookings SET status = 'đã hủy' WHERE id = :id")->execute(['id' => $bid]);
             } else {
                 if (!in_array($revert, $ok, true)) {
@@ -37,8 +50,11 @@ if ($bid > 0 && ($action === 'approve' || $action === 'reject')) {
                 $pdo->prepare('UPDATE bookings SET status = :s WHERE id = :id')->execute(['s' => $revert, 'id' => $bid]);
             }
         }
+        $pdo->commit();
     } catch (Throwable) {
-        // ignore
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
     }
 }
 

@@ -8,3 +8,11 @@
 
 # Bật tạm để chạy auth/demo_account_setup.php — không commit
 database/.enable_demo_setup
+
+# Ảnh trong uploads/ (chỉ giữ .gitkeep trên git)
+uploads/tours/*
+!uploads/tours/.gitkeep
+uploads/blog/*
+!uploads/blog/.gitkeep
+uploads/avatars/*
+!uploads/avatars/.gitkeep

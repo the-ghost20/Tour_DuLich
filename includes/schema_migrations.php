@@ -278,3 +278,40 @@ function app_ensure_blog_posts_extra_columns(PDO $pdo, string $schemaName): void
         error_log('app_ensure_blog_posts_extra_columns: ' . $msg);
     }
 }
+
+/**
+ * Thời điểm khách xác nhận đã chuyển khoản (QR).
+ */
+function app_ensure_bookings_paid_at_column(PDO $pdo, string $schemaName): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+
+    try {
+        $chk = $pdo->prepare(
+            'SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = :s AND TABLE_NAME = :t AND COLUMN_NAME = :c'
+        );
+        $chk->execute([
+            's' => $schemaName,
+            't' => 'bookings',
+            'c' => 'paid_at',
+        ]);
+        if ((int) $chk->fetchColumn() > 0) {
+            return;
+        }
+
+        $pdo->exec(
+            'ALTER TABLE `bookings` ADD COLUMN `paid_at` DATETIME NULL DEFAULT NULL AFTER `updated_at`'
+        );
+    } catch (Throwable $e) {
+        $msg = $e->getMessage();
+        if (str_contains($msg, '1060') || str_contains($msg, 'Duplicate column')) {
+            return;
+        }
+        error_log('app_ensure_bookings_paid_at_column: ' . $msg);
+    }
+}

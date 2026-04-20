@@ -120,3 +120,17 @@ function app_phone_exists_for_other_user(PDO $pdo, string $phone, ?int $exceptUs
 
     return false;
 }
+
+/**
+ * Tour được hiển thị / đặt trên site khách: trạng thái đang bán và còn chỗ (> 0).
+ */
+function tour_sql_public_visible(): string
+{
+    return "status = 'hiện' AND available_slots > 0";
+}
+
+function tour_is_publicly_bookable(array $tourRow): bool
+{
+    return (string) ($tourRow['status'] ?? '') === 'hiện'
+        && (int) ($tourRow['available_slots'] ?? 0) > 0;
+}

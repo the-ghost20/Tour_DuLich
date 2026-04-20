@@ -76,6 +76,15 @@ try {
     $tours = [];
 }
 
+$toursSoldOutPublic = [];
+try {
+    $toursSoldOutPublic = $pdo->query(
+        "SELECT id, tour_name, destination FROM tours WHERE status = 'hiện' AND available_slots = 0 ORDER BY id DESC"
+    )->fetchAll();
+} catch (Throwable) {
+    $toursSoldOutPublic = [];
+}
+
 function h3(mixed $v): string { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
 $totalActive = count(array_filter($tours, fn($t) => $t['status'] === 'hiện'));
@@ -98,6 +107,37 @@ require __DIR__ . '/../../includes/admin_header.php';
   <div class="alert alert-<?= $flashType ?>">
     <i class="fas fa-<?= $flashType === 'success' ? 'check-circle' : 'exclamation-circle' ?>"></i>
     <?= h3($flashMsg) ?>
+  </div>
+<?php endif; ?>
+
+<?php if (!empty($toursSoldOutPublic)): ?>
+  <div class="alert alert-warning" style="margin-bottom:20px;border-left:4px solid #f59e0b">
+    <div style="font-weight:700;margin-bottom:8px">
+      <i class="fas fa-ticket-alt"></i>
+      <?= count($toursSoldOutPublic) ?> tour đang <strong>hiển thị</strong> nhưng <strong>đã hết chỗ</strong>
+      — khách <strong>không</strong> thấy trên website cho đến khi có chỗ hoặc bạn ẩn tour.
+    </div>
+    <p class="cell-muted" style="margin:0 0 12px;font-size:0.9rem">
+      Thêm chỗ trong Sửa tour / trang cập nhật chỗ (staff), hoặc ẩn tour nếu không mở bán thêm.
+    </p>
+    <ul style="margin:0;padding-left:1.2rem;line-height:1.65">
+      <?php foreach ($toursSoldOutPublic as $so): ?>
+        <li>
+          <strong><?= h3($so['tour_name']) ?></strong>
+          <span class="cell-muted">(#<?= (int) $so['id'] ?> · <?= h3((string) $so['destination']) ?>)</span>
+          <a href="edit.php?id=<?= (int) $so['id'] ?>" class="btn btn-ghost btn-sm" style="margin-left:6px">Sửa tour</a>
+          <form method="post" style="display:inline;margin:0" onsubmit="return confirm('Ẩn tour khỏi website?');">
+            <input type="hidden" name="toggle_id" value="<?= (int) $so['id'] ?>" />
+            <button type="submit" class="btn btn-warning-ghost btn-sm" style="margin-left:4px">Ẩn tour</button>
+          </form>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+    <p style="margin:14px 0 0">
+      <a href="<?= h3(app_staff_url('tours/update_slots.php')) ?>" class="btn btn-primary btn-sm">
+        <i class="fas fa-chair"></i> Cập nhật số chỗ (Staff)
+      </a>
+    </p>
   </div>
 <?php endif; ?>
 
@@ -182,11 +222,12 @@ require __DIR__ . '/../../includes/admin_header.php';
           <?php foreach ($tours as $tour): ?>
             <?php
               $isActive = $tour['status'] === 'hiện';
+              $isSoldOutPublic = $isActive && (int) $tour['available_slots'] === 0;
               $statusBadge = $isActive ? 'badge-success' : 'badge-neutral';
               $toggleLabel = $isActive ? 'Ẩn tour' : 'Hiện tour';
               $toggleIcon  = $isActive ? 'eye-slash' : 'eye';
             ?>
-            <tr>
+            <tr<?= $isSoldOutPublic ? ' style="background:#fffbeb"' : '' ?>>
               <td><span class="cell-muted">#<?= (int)$tour['id'] ?></span></td>
               <td>
                 <div class="cell-bold" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="<?= h3($tour['tour_name']) ?>">
@@ -214,6 +255,9 @@ require __DIR__ . '/../../includes/admin_header.php';
                   <span class="badge-dot"></span>
                   <?= h3($tour['status']) ?>
                 </span>
+                <?php if ($isSoldOutPublic): ?>
+                  <div style="margin-top:6px"><span class="badge badge-danger">Hết chỗ</span></div>
+                <?php endif; ?>
               </td>
               <td class="cell-muted"><?= date('d/m/Y', strtotime($tour['created_at'])) ?></td>
               <td class="cell-right">

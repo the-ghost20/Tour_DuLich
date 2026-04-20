@@ -25,8 +25,15 @@ $stmt = $pdo->prepare(
 $stmt->execute(['id' => $tourId]);
 $tour = $stmt->fetch();
 
-if (!$tour || (string) $tour['status'] !== 'hiện') {
+if (!$tour) {
     http_response_code(404);
+    exit('Tour không tồn tại hoặc đã ngừng bán.');
+}
+if (!tour_is_publicly_bookable($tour)) {
+    http_response_code(404);
+    if ((string) $tour['status'] === 'hiện' && (int) $tour['available_slots'] <= 0) {
+        exit('Tour đã hết chỗ. Vui lòng chọn tour khác hoặc quay lại sau.');
+    }
     exit('Tour không tồn tại hoặc đã ngừng bán.');
 }
 

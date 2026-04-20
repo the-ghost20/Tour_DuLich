@@ -99,6 +99,7 @@ CREATE TABLE `bookings` (
   `cancel_reason` TEXT NULL DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `paid_at` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_bookings_user` (`user_id`),
   KEY `idx_bookings_tour` (`tour_id`),

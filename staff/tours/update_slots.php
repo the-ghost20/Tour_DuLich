@@ -40,6 +40,13 @@ try {
     $tours = [];
 }
 
+$soldOutShown = array_values(array_filter(
+    $tours,
+    static function (array $t): bool {
+        return (string) $t['status'] === 'hiện' && (int) $t['available_slots'] <= 0;
+    }
+));
+
 function h(mixed $v): string
 {
     return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
@@ -54,6 +61,14 @@ require dirname(__DIR__, 2) . '/includes/staff_header.php';
 
 <?php if ($flash): ?>
   <div class="alert alert-<?= h($flashType) ?>"><?= h($flash) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($soldOutShown)): ?>
+  <div class="alert alert-warning" style="margin-bottom:16px;border-left:4px solid #f59e0b">
+    <strong><i class="fas fa-exclamation-triangle"></i> <?= count($soldOutShown) ?> tour đang “hiển thị” nhưng hết chỗ</strong>
+    — khách không thấy các tour này trên website. Nhập số chỗ mới bên dưới hoặc nhờ admin
+    <a href="<?= h(app_admin_url('tours/list.php')) ?>">ẩn tour</a> nếu không mở thêm suất.
+  </div>
 <?php endif; ?>
 
 <div class="data-card">
@@ -79,7 +94,10 @@ require dirname(__DIR__, 2) . '/includes/staff_header.php';
           <tr><td colspan="5"><div class="empty-state"><i class="fas fa-route"></i><p>Chưa có tour.</p></div></td></tr>
         <?php else: ?>
           <?php foreach ($tours as $t): ?>
-            <tr>
+            <?php
+              $rowSoldOut = (string) $t['status'] === 'hiện' && (int) $t['available_slots'] <= 0;
+            ?>
+            <tr<?= $rowSoldOut ? ' style="background:#fffbeb"' : '' ?>>
               <td class="cell-bold">#<?= (int) $t['id'] ?></td>
               <td class="cell-bold"><?= h($t['tour_name']) ?></td>
               <td class="cell-muted"><?= h($t['destination']) ?></td>

@@ -122,6 +122,15 @@ try {
     $topTours = $r->fetchAll();
 } catch (Throwable) {}
 
+$toursSoldOut = [];
+try {
+    $toursSoldOut = $pdo->query(
+        "SELECT id, tour_name FROM tours WHERE status = 'hiện' AND available_slots = 0 ORDER BY id DESC LIMIT 15"
+    )->fetchAll();
+} catch (Throwable) {
+    $toursSoldOut = [];
+}
+
 // ── Booking status pie data ──────────────────────────────────
 $pieData = [$stats['pending_bookings'], $stats['confirmed'], $stats['cancelled']];
 
@@ -154,6 +163,25 @@ HTML;
 
 require __DIR__ . '/../includes/admin_header.php';
 ?>
+
+<?php if (!empty($toursSoldOut)): ?>
+  <div class="alert alert-warning" style="margin-bottom:20px;border-left:4px solid #f59e0b">
+    <strong><i class="fas fa-box-open"></i> Tour hết chỗ (trạng thái vẫn “hiện” — khách không thấy trên web):</strong>
+    <?php
+      $names = [];
+      foreach ($toursSoldOut as $so) {
+          $names[] = adminH2($so['tour_name']) . ' #' . (int) $so['id'];
+      }
+      echo ' ' . implode('; ', $names);
+    ?>
+    <a href="<?= adminH2(app_admin_url('tours/list.php')) ?>" class="btn btn-primary btn-sm" style="margin-left:12px;vertical-align:middle">
+      Thêm chỗ hoặc ẩn tour
+    </a>
+    <a href="<?= adminH2(app_staff_url('tours/update_slots.php')) ?>" class="btn btn-ghost btn-sm" style="margin-left:8px;vertical-align:middle">
+      Cập nhật chỗ (Staff)
+    </a>
+  </div>
+<?php endif; ?>
 
 <!-- ═══════════════════════════════════════════════
      STATS CARDS

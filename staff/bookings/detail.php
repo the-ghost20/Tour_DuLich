@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/includes/db.php';
+require_once dirname(__DIR__, 2) . '/includes/booking_slots.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -23,9 +24,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $bid = (int) ($_POST['booking_id'] ?? 0);
     if ($bid > 0 && in_array($newStatus, $allowedStatus, true)) {
         try {
-            $pdo->prepare('UPDATE bookings SET status = :s WHERE id = :id')->execute(['s' => $newStatus, 'id' => $bid]);
-            $flash = 'Đã cập nhật trạng thái đơn.';
+            $pdo->beginTransaction();
+            $sel = $pdo->prepare(
+                'SELECT id, tour_id, adults, children, status FROM bookings WHERE id = :id LIMIT 1 FOR UPDATE'
+            );
+            $sel->execute(['id' => $bid]);
+            $prev = $sel->fetch(PDO::FETCH_ASSOC);
+            if (!$prev) {
+                $pdo->rollBack();
+                $flash     = 'Không tìm thấy đơn.';
+                $flashType = 'danger';
+            } else {
+                $guests = booking_guest_total((int) $prev['adults'], (int) $prev['children']);
+                booking_release_slots_if_cancelled(
+                    $pdo,
+                    (string) $prev['status'],
+                    $newStatus,
+                    (int) $prev['tour_id'],
+                    $guests
+                );
+                $pdo->prepare('UPDATE bookings SET status = :s WHERE id = :id')
+                    ->execute(['s' => $newStatus, 'id' => $bid]);
+                $pdo->commit();
+                $flash = 'Đã cập nhật trạng thái đơn.';
+            }
         } catch (Throwable) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             $flash     = 'Không cập nhật được.';
             $flashType = 'danger';
         }
@@ -134,6 +160,10 @@ require dirname(__DIR__, 2) . '/includes/staff_header.php';
       <div>
         <div class="cell-muted" style="font-size:0.75rem;text-transform:uppercase">Đặt lúc</div>
         <div><?= date('d/m/Y H:i', strtotime((string) $row['created_at'])) ?></div>
+        <?php if (!empty($row['paid_at'])): ?>
+          <div class="cell-muted" style="margin-top:10px;font-size:0.75rem;text-transform:uppercase">Khách xác nhận thanh toán</div>
+          <div class="cell-bold"><?= h(date('d/m/Y H:i', strtotime((string) $row['paid_at']))) ?></div>
+        <?php endif; ?>
         <?php
           $depD = $row['departure_date'] ?? null;
           if ($depD): ?>
