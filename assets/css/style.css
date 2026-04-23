@@ -396,21 +396,37 @@ a {
 }
 
 .navbar-container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .navbar-start {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 3vw, 2.75rem);
+  gap: clamp(0.75rem, 2vw, 2rem);
   flex: 1;
   min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.navbar-links {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.navbar-links::-webkit-scrollbar {
+  display: none;
 }
 
 .navbar-logo {
@@ -453,21 +469,28 @@ a {
 }
 
 .navbar-menu {
-  display: flex;
+  display: inline-flex;
+  flex-direction: row;
   list-style: none;
-  gap: clamp(0.35rem, 1.8vw, 1.35rem);
-  flex: 1;
+  gap: clamp(0.2rem, 0.9vw, 0.95rem);
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin: 0;
   padding: 0;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: none;
+}
+
+.navbar-menu > li {
+  flex: 0 0 auto;
 }
 
 .nav-link {
   color: rgba(248, 250, 252, 0.82);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  padding: 0.45rem 0.65rem;
+  padding: 0.4rem 0.55rem;
   border-radius: 999px;
   transition:
     color 0.2s ease,
@@ -632,10 +655,20 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: min(220px, 30vw);
+  min-width: 0;
+}
+
+.user-menu-btn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .user-menu-btn i {
   font-size: 0.8rem;
+  flex-shrink: 0;
 }
 
 .user-menu-dropdown {
@@ -1398,6 +1431,7 @@ a {
   .navbar-menu {
     gap: 1rem;
     font-size: 0.9rem;
+    flex-wrap: nowrap;
   }
 
   .search-input {

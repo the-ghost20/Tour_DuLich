@@ -35,17 +35,19 @@ $isCustomerNav = !$isLoggedIn || (!$isAdmin && !$isStaff);
       <span class="navbar-logo-text">Du lịch Việt</span>
     </a>
 
-    <ul class="navbar-menu">
-      <li><a href="<?= htmlspecialchars($u . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>">Trang chủ</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'about.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'about' ? 'active' : '' ?>">Giới thiệu</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'tours.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'tours' ? 'active' : '' ?>">Tour</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'pricing.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'pricing' ? 'active' : '' ?>">Bảng giá</a></li>
-      <li><a href="<?= htmlspecialchars($u . 'blog.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'blog' ? 'active' : '' ?>">Blog</a></li>
-      <?php if ($isCustomerNav): ?>
-      <li><a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'wishlist' ? 'active' : '' ?>">Yêu thích</a></li>
-      <?php endif; ?>
-      <li><a href="#contact" class="nav-link">Liên hệ</a></li>
-    </ul>
+    <div class="navbar-links">
+      <ul class="navbar-menu">
+        <li><a href="<?= htmlspecialchars($u . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>">Trang chủ</a></li>
+        <li><a href="<?= htmlspecialchars($u . 'about.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'about' ? 'active' : '' ?>">Giới thiệu</a></li>
+        <li><a href="<?= htmlspecialchars($u . 'tours.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'tours' ? 'active' : '' ?>">Tour</a></li>
+        <li><a href="<?= htmlspecialchars($u . 'pricing.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'pricing' ? 'active' : '' ?>">Bảng giá</a></li>
+        <li><a href="<?= htmlspecialchars($u . 'blog.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'blog' ? 'active' : '' ?>">Blog</a></li>
+        <?php if ($isCustomerNav): ?>
+        <li><a href="<?= htmlspecialchars($u . 'wishlist.php', ENT_QUOTES, 'UTF-8') ?>" class="nav-link <?= $activePage === 'wishlist' ? 'active' : '' ?>">Yêu thích</a></li>
+        <?php endif; ?>
+        <li><a href="#contact" class="nav-link">Liên hệ</a></li>
+      </ul>
+    </div>
     </div>
 
     <div class="navbar-right">
@@ -67,8 +69,8 @@ $isCustomerNav = !$isLoggedIn || (!$isAdmin && !$isStaff);
       <?php else: ?>
         <div class="user-menu">
           <button class="user-menu-btn" type="button">
-            Xin chào, <?= htmlspecialchars($currentUserName !== '' ? $currentUserName : 'Tài khoản', ENT_QUOTES, 'UTF-8') ?>
-            <i class="fas fa-chevron-down"></i>
+            <span class="user-menu-btn-label">Xin chào, <?= htmlspecialchars($currentUserName !== '' ? $currentUserName : 'Tài khoản', ENT_QUOTES, 'UTF-8') ?></span>
+            <i class="fas fa-chevron-down" aria-hidden="true"></i>
           </button>
           <div class="user-menu-dropdown">
             <?php if ($isAdmin): ?>
