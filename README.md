@@ -105,7 +105,7 @@ Dùng danh sách dưới đây khi cần **trích đoạn code** hoặc **mục 
 | **Staff** | `staff/index.php`, `staff/bookings/*.php`, `staff/tours/update_slots.php`, `staff/blog/*.php`, `staff/reviews/list.php`, `staff/contact/list.php`, `staff/profile.php` |
 | **Giao diện chung** | `includes/header.php`, `includes/footer.php`, `includes/admin_header.php`, `includes/admin_footer.php`, `includes/staff_header.php`, `includes/staff_footer.php`, `assets/css/style.css`, `assets/css/admin.css`, `assets/css/staff.css`, `assets/js/main.js` |
 | **Blog / email** | `includes/blog_helpers.php`, `includes/blog_listing_fragment.php`, `includes/blog_articles.php`, `includes/mailer.php` |
-| **CSDL** | `database/tour_management.sql`, `database/sample_data.sql`, `database/migrations/*.sql`, `database/tour_itinerary_seed.sql`, `database/dev-scripts/*` |
+| **CSDL** | `database/tour_management.sql`, `database/sample_data.sql`, `database/migrations/*.sql`, `database/dev-scripts/*` |
 
 **Gợi ý:** với báo cáo ngắn, ưu tiên in/ghi chú: `config.php` + `db.php`, một luồng `booking.php` → `booking_quote.php` → `payment.php`, và `tour_management.sql` (sơ đồ bảng).
 
@@ -144,12 +144,10 @@ Dùng danh sách dưới đây khi cần **trích đoạn code** hoặc **mục 
 | Staff | `staff.dulichviet@gmail.com` | `password` |
 | Khách | `user1.dulichviet@gmail.com` … `user4.dulichviet@gmail.com` | `password` |
 
-Nếu database cũ vẫn dùng email `*@dulichviet.test`, có thể chạy `database/dev-scripts/update_demo_emails.sql` để đổi sang các địa chỉ Gmail trên (không đổi mật khẩu).
-
 **Không đăng nhập được với email Gmail mới?** File trong repo chỉ là mã nguồn — MySQL trên máy bạn **không tự đổi** cho đến khi bạn import lại `sample_data.sql` hoặc chạy SQL cập nhật.
 
 - **Cách dễ nhất (trình duyệt):** tạo file rỗng `database/.enable_demo_setup`, rồi mở **`auth/demo_account_setup.php`** (ví dụ `http://localhost:8888/Tour_DuLich/auth/demo_account_setup.php`). Trang sẽ hiện email đang lưu trong DB và có nút **Đặt lại tài khoản demo** (ghi email Gmail + mật khẩu `password` bằng `password_hash` của PHP). Sau khi xong, file `.enable_demo_setup` tự bị xóa.
-- **Hoặc dùng MySQL:** import **`database/fix_demo_accounts.sql`** (cùng hash bcrypt có sẵn trong repo).
+- **Hoặc dùng MySQL:** import **`database/dev-scripts/fix_demo_accounts.sql`** (cùng hash bcrypt có sẵn trong repo).
 
 Đăng nhập cần **đủ hai ô**: email `admin.dulichviet@gmail.com` và mật khẩu chữ thường **`password`**. Kiểm tra `includes/config.php` trùng **host/port/tên DB** với nơi bạn đã import dữ liệu (MAMP thường port **8889**).
 
@@ -305,17 +303,15 @@ Tour_DuLich/
 
 ---
 
-## File SQL trong `database/` — **không gộp một file** (giữ nhiều file, dùng đúng lúc)
+## File SQL trong `database/`
 
 | File | Khi nào dùng |
 |------|----------------|
 | **`tour_management.sql`** | Lần đầu: tạo DB + bảng. |
-| **`sample_data.sql`** | Sau đó: dữ liệu mẫu (user, tour, booking, blog, …) — **đã gồm khối UPDATE lịch trình (itinerary) cho tour mẫu**. |
+| **`sample_data.sql`** | Sau đó: dữ liệu mẫu (user, tour, booking, blog, lịch trình itinerary…). |
 | **`migrations/*.sql`** | DB cũ thiếu cột / bảng: import từng file theo số thứ tự **hoặc** để app tự `ALTER` khi chạy (xem `includes/schema_migrations.php`). Ví dụ `005_bookings_paid_at.sql` bổ sung thời điểm thanh toán. |
-| **`tour_itinerary_seed.sql`** | **Tuỳ chọn / trùng phần lớn với `sample_data`** nếu bạn đã import sample đầy đủ. Hữu ích khi chỉ muốn **nạp lại lịch trình** mà không import cả sample. |
-| **`database/dev-scripts/fix_demo_accounts.sql`** | Một lệnh SQL: set email Gmail + hash mật khẩu `password` cho user id 1–6 (khi đăng nhập demo lệch). |
-| **`database/dev-scripts/update_demo_emails.sql`** | Chỉ đổi email từ `@dulichviet.test` → Gmail (không đổi hash). |
-| **`database/dev-scripts/reset_demo_passwords.sql`** | Chỉ reset mật khẩu (email cũ trong file) — chồng với `fix_demo_accounts` nếu bạn đã đổi email. |
+| **`dev-scripts/fix_demo_accounts.sql`** | Set email Gmail + hash mật khẩu `password` cho user id 1–6 (khi đăng nhập demo lệch). |
+| **`dev-scripts/demo_account_setup.php`** | Logic cho trang `auth/demo_account_setup.php` (reset demo qua trình duyệt). |
 
 **Gợi ý gọn:** làm việc hàng ngày chỉ cần nhớ **`tour_management.sql` + `sample_data.sql`**; khi đăng nhập demo sai thì **`database/dev-scripts/fix_demo_accounts.sql`** hoặc trang **`auth/demo_account_setup.php`** (có file cờ `database/.enable_demo_setup`).
 
@@ -338,11 +334,9 @@ Không còn `filter.js` (đã dọn).
 
 ---
 
-## Muốn “gộp” thêm trong tương lai (không bắt buộc)
+## Ghi chú phát triển
 
-- Gộp nhiều file SQL demo thành một: **có thể** nhưng mất linh hoạt import từng bước; hiện tài liệu khuyến nghị **giữ tách** và chỉ dùng đúng bảng trên.
-- Đổi cấu trúc `admin/` / `staff/` thành namespace PSR-4: đổi lớn — ngoài phạm vi “dọn nhẹ”.
-
+- Đổi cấu trúc `admin/` / `staff/` thành namespace PSR-4: đổi lớn — ngoài phạm vi "dọn nhẹ".
 ---
 
 © Cập nhật cùng repo Tour_DuLich — phần cài đặt và tài khoản mẫu nằm ở đầu file `README.md` này.
