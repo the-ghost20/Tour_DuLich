@@ -92,11 +92,21 @@
     }
     @keyframes bkFadeIn { from { opacity: 0; } to { opacity: 1; } }
     .bk-box {
-      background: #fff;
-      border-radius: 24px;
-      padding: 32px 30px 28px;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(238, 245, 255, 0.95) 42%,
+        rgba(243, 249, 255, 0.92) 100%
+      );
+      background-image: radial-gradient(circle at top left, rgba(33, 150, 243, 0.12), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(0, 188, 212, 0.10), transparent 24%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 245, 255, 0.95));
+      border: 1px solid rgba(33, 150, 243, 0.16);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      padding: 34px 32px 30px;
       width: 100%; max-width: 520px;
-      box-shadow: 0 32px 80px rgba(8, 20, 80, 0.28);
+      box-shadow: 0 32px 80px rgba(8, 20, 80, 0.24);
       position: relative;
       animation: bkSlideUp 0.25s ease;
     }
