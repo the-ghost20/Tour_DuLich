@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/notifications.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -100,6 +101,22 @@ try {
     ]);
 
     $bookingId = (int) $pdo->lastInsertId();
+    $userStmt = $pdo->prepare('SELECT full_name, email, phone FROM users WHERE id = :id LIMIT 1');
+    $userStmt->execute(['id' => $userId]);
+    $user = $userStmt->fetch();
+
+    if ($user) {
+        send_booking_notification(
+            (string) $user['full_name'],
+            (string) $user['email'],
+            (string) $user['phone'],
+            $bookingId,
+            (string) $tour['tour_name'],
+            $adults,
+            $children,
+            $totalAmount
+        );
+    }
 
     echo json_encode([
         'success'    => true,

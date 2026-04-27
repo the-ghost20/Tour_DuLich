@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/notifications.php';
 
 $errors = [];
 $successMessage = null;
@@ -9,12 +10,15 @@ $successMessage = null;
 $fullName = '';
 $email = '';
 $phone = '';
+$phoneCode = '+84';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim((string) ($_POST['full_name'] ?? ''));
     $email = trim((string) ($_POST['email'] ?? ''));
+    $phoneCode = trim((string) ($_POST['phone_code'] ?? '+84'));
     $phone = trim((string) ($_POST['phone'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
+    $fullPhone = normalize_sms_phone($phoneCode . $phone);
 
     if ($fullName === '') {
         $errors[] = 'Vui lòng nhập họ tên.';
@@ -46,8 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'full_name' => $fullName,
                 'email' => $email,
                 'password' => $hashedPassword,
-                'phone' => $phone,
+                'phone' => $fullPhone,
             ]);
+
+            if ($insert->rowCount()) {
+                send_user_welcome_notification($fullName, $email, $fullPhone);
+            }
 
             header('Location: login.php');
             exit;
@@ -158,11 +166,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="phone"><i class="fas fa-phone" style="color: #00acc1; margin-right: 4px;"></i> Số điện thoại</label>
             <div class="auth-phone-group">
               <select id="phone_code" name="phone_code" aria-label="Mã quốc gia">
-                <option value="+84" selected>Việt Nam (+84)</option>
-                <option value="+1">Mỹ (+1)</option>
-                <option value="+81">Nhật Bản (+81)</option>
-                <option value="+82">Hàn Quốc (+82)</option>
-                <option value="+86">Trung Quốc (+86)</option>
+                <option value="+84" <?= $phoneCode === '+84' ? 'selected' : '' ?>>Việt Nam (+84)</option>
+                <option value="+1" <?= $phoneCode === '+1' ? 'selected' : '' ?>>Mỹ (+1)</option>
+                <option value="+81" <?= $phoneCode === '+81' ? 'selected' : '' ?>>Nhật Bản (+81)</option>
+                <option value="+82" <?= $phoneCode === '+82' ? 'selected' : '' ?>>Hàn Quốc (+82)</option>
+                <option value="+86" <?= $phoneCode === '+86' ? 'selected' : '' ?>>Trung Quốc (+86)</option>
               </select>
               <input id="phone" name="phone" type="text" value="<?= htmlspecialchars($phone, ENT_QUOTES, 'UTF-8') ?>" placeholder="Nhập số điện thoại" required />
             </div>

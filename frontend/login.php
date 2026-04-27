@@ -9,6 +9,11 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 $errors = [];
 $email = '';
+$successMessage = '';
+
+if (isset($_GET['reset']) && $_GET['reset'] === '1') {
+    $successMessage = 'Mật khẩu đã được đổi thành công. Bạn có thể đăng nhập ngay bây giờ.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim((string) ($_POST['email'] ?? ''));
@@ -73,6 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         padding: 30px;
         border: 1px solid rgba(33, 150, 243, 0.14);
       }
+      .auth-page .auth-success {
+        background: #e6fffa;
+        color: #065f46;
+        border: 1px solid #5eead4;
+        padding: 14px 18px;
+        border-radius: 14px;
+        margin-bottom: 18px;
+      }
       .auth-page .auth-title { margin: 0 0 6px 0; font-size: 2rem; }
       .auth-page .auth-subtitle { margin: 0 0 20px; color: #64748b; }
       .auth-page .auth-field { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
@@ -113,6 +126,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1 class="auth-title">Đăng nhập</h1>
         <p class="auth-subtitle">Đăng nhập để tiếp tục đặt tour và theo dõi các chuyến đi của bạn.</p>
 
+        <?php if ($successMessage !== ''): ?>
+          <div class="auth-success">
+            <?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8') ?>
+          </div>
+        <?php endif; ?>
         <?php if (!empty($errors)): ?>
           <div class="auth-alert">
             <ul class="auth-errors">

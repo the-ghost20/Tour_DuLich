@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/notifications.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -76,8 +77,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'id' => $userId,
             ]);
 
+            $userName = '';
+            $userLookup = $pdo->prepare('SELECT full_name FROM users WHERE id = :id LIMIT 1');
+            $userLookup->execute(['id' => $userId]);
+            $userInfo = $userLookup->fetch();
+            if ($userInfo) {
+                $userName = (string) $userInfo['full_name'];
+            }
+
+            send_password_reset_notification(
+                $userName,
+                $email,
+                $phone
+            );
+
             unset($_SESSION['forgot_password_user_id'], $_SESSION['forgot_password_email'], $_SESSION['forgot_password_phone']);
-            header('Location: login.php');
+            header('Location: login.php?reset=1');
             exit;
         } else {
             $isVerified = $userId > 0;
