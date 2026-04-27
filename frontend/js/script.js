@@ -62,8 +62,7 @@ function initializeEventListeners() {
   // Mobile menu toggle
   if (mobileToggle) {
     mobileToggle.addEventListener("click", () => {
-      navbarMenu.style.display =
-        navbarMenu.style.display === "flex" ? "none" : "flex";
+      navbarMenu.classList.toggle("mobile-open");
     });
   }
 
